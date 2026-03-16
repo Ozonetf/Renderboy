@@ -7,26 +7,17 @@ project(openGlProject)
 
 find_package( OpenGL REQUIRED )
 
+# add glad as library
+add_library(glad STATIC src/glad.c)
+target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+#cmake target
 add_executable(renderer main.cpp)
 
+# link glfw extern 
 add_subdirectory(extern/glfw)
-# add_subdirectory(src)
-
-add_library(glad)
-target_sources(glad
-  PRIVATE 
-    src/glad.c
-  
-  PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS
-      include
-    FILES
-      include/glad/glad.h
-    )
-
-# target_include_directories(renderer PRIVATE include)
 
 target_link_libraries(renderer glad)
 target_link_libraries(renderer OpenGL::GL)
 target_link_libraries(renderer glfw)
+
