@@ -1,15 +1,20 @@
+#include <iostream>
+#include "include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
 int main(void)
 {
-    GLFWwindow* window;
-
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }    
     /* Initialize the library */
     if (!glfwInit())
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "GLFW CMake starter", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(640, 480, "GLFW CMake starter", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
