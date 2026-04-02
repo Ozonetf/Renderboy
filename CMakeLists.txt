@@ -13,6 +13,7 @@ target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 #cmake target
 add_executable(renderer main.cpp)
+target_include_directories(renderer PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # link glfw extern 
 add_subdirectory(extern/glfw)

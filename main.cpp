@@ -1,30 +1,7 @@
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <cstdio>
-#include <ctime>
-#include <cstdlib>
-#include <cmath>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#define MAX_SHADER_SIZE 4069
+#include"main.h"
+#include "include/shader.h"
+#include "texture.h"
 int SEED = 0;
-
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
 
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 {
@@ -49,56 +26,18 @@ void setVA_PC()
     glEnableVertexAttribArray(1);  
 }
 
-GLuint createVertexShader(const char* fileName)
+//sets the vertex attribute to:
+//0=position
+//1=color
+//2=texCoord
+void setVA_PCT()
 {
-    auto VS = std::fopen(fileName, "r");
-    if(!VS)
-    {
-        std::cerr << "cannot open vertex shader "<<fileName<<'\n';
-        return 0;
-    }
-    char VSbuffer[MAX_SHADER_SIZE];
-    auto shaderSize = fread(VSbuffer, 1, MAX_SHADER_SIZE-1, VS);
-    VSbuffer[shaderSize]='\0';
-    int success; char infoLog[512];
-    GLuint VShandle = glCreateShader(GL_VERTEX_SHADER);
-    const char* VSstr = VSbuffer;
-    glShaderSource(VShandle, 1, &VSstr, NULL);
-    glCompileShader(VShandle);
-    glGetShaderiv(VShandle, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(VShandle, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        // abort();
-    }
-    return VShandle;
-}
-
-GLuint createFragmentShader(const char* fileName)
-{
-    auto shader = std::fopen(fileName, "r");
-    if(!shader)
-    {
-        std::cerr << "cannot open vertex shader "<<fileName<<'\n';
-        return 0;
-    }
-    char shaderBuffer[MAX_SHADER_SIZE];
-    auto shaderSize = fread(shaderBuffer, 1, MAX_SHADER_SIZE-1, shader);
-    shaderBuffer[shaderSize]='\0';
-    int success; char infoLog[512];
-    GLuint shaderhandle = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* shaderstr = shaderBuffer;
-    glShaderSource(shaderhandle, 1, &shaderstr, NULL);
-    glCompileShader(shaderhandle);
-    glGetShaderiv(shaderhandle, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(shaderhandle, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-        // abort();
-    }
-    return shaderhandle;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);  
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);  
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
+    glEnableVertexAttribArray(2);  
 }
 
 int main(void)
@@ -130,31 +69,18 @@ int main(void)
     }    
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
-    int  success;
-    char infoLog[512];
-    auto VS = createVertexShader("shaders/Vertex1.glsl");
-    auto PS = createFragmentShader("shaders/Frag1.glsl");
-
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, VS);
-    glAttachShader(shaderProgram, PS);
-    glLinkProgram(shaderProgram);
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if(!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    auto uniformHandle = glGetUniformLocation(shaderProgram, "myfloat");    
-    glUseProgram(shaderProgram);
-    glDeleteShader(VS);
-    glDeleteShader(PS);
+    auto mySP = shaderProgram{};
+    mySP.attachVS("shaders/Vertex1.glsl");
+    mySP.attachFS("shaders/Frag1.glsl");
+    mySP.activate();
     glClearColor( randomFloat(), randomFloat(), randomFloat(), randomFloat() );
 
     float vertices[] = {
-        0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // top left 
+        // positions         // colors          // texture coords
+        0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f    // top left
     };
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,   // first triangle
@@ -172,7 +98,17 @@ int main(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    setVA_PC();
+    setVA_PCT();
+    stbi_set_flip_vertically_on_load(true);  
+    auto tex1 = texture{};
+    tex1.createFromFile("textures/container.jpg", true);  
+    tex1.bindToActiveUnit();
+    glActiveTexture(GL_TEXTURE1);  
+    auto tex2 = texture{};
+    tex2.createFromFile("textures/kool.png", true);
+    tex2.bindToActiveUnit();
+    mySP.setUniform1("myTex", 0);
+    mySP.setUniform1("myTex2", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     /* Loop until the user closes the window */
@@ -181,9 +117,9 @@ int main(void)
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
-        glUseProgram(shaderProgram);
+        // glUseProgram(myShaderProgram);
         float greenValue = (std::sin(glfwGetTime())+1)/2;
-        glUniform1f(uniformHandle, greenValue);
+        mySP.setUniform1("myfloat", greenValue);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
