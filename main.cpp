@@ -1,6 +1,9 @@
 #include"main.h"
 #include "include/shader.h"
 #include "texture.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 int SEED = 0;
 
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
@@ -111,6 +114,12 @@ int main(void)
     mySP.setUniform1("myTex2", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    glm::mat4 trans = glm::mat4(1.0f);
+    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));  
+    // glUniformMatrix4fv();
+    unsigned int transformLoc = glGetUniformLocation(mySP.handle(), "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {

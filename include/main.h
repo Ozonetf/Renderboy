@@ -14,6 +14,5 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
-
 static int GL_SUCC=0;
 static char GL_ERR_INFO[512]{};
