@@ -64,6 +64,7 @@ public:
     void attachFS(const char* filename);
     void activate();
 
+    inline GLuint handle(){return m_handle;};
     template <typename T>
     void setUniform1(const char* uName, T in);
 };
@@ -108,7 +109,7 @@ inline void shaderProgram::setUniform1<int>(const char* uName,int in)
     glUniform1i(glGetUniformLocation(m_handle, uName), in);
 }
 template <>
-inline void shaderProgram::setUniform1<uint>(const char* uName,uint in)
+inline void shaderProgram::setUniform1<unsigned int>(const char* uName,unsigned int in)
 {
     glUniform1ui(glGetUniformLocation(m_handle, uName), in);
 }
