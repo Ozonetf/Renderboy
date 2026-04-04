@@ -5,7 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 int SEED = 0;
-
+static int _width = 2560;
+static int _height = 1440;
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -43,6 +44,17 @@ void setVA_PCT()
     glEnableVertexAttribArray(2);  
 }
 
+//sets the vertex attribute to:
+//0=position
+//2=texCoord
+void setVA_PT()
+{
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);  
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(2);  
+}
+
 int main(void)
 {
     /* Initialize the library */
@@ -55,7 +67,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MyOpenGLProject", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(_width, _height, "MyOpenGLProject", NULL, NULL);
     if (!window)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -96,12 +108,13 @@ int main(void)
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    setVA_PCT();
+    // setVA_PCT();
+    setVA_PT();
     stbi_set_flip_vertically_on_load(true);  
     auto tex1 = texture{};
     tex1.createFromFile("textures/container.jpg", true);  
@@ -114,27 +127,32 @@ int main(void)
     mySP.setUniform1("myTex2", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));  
-    // glUniformMatrix4fv();
-    unsigned int transformLoc = glGetUniformLocation(mySP.handle(), "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+    auto modelTransform = glm::mat4(1.0f);
+    auto view = glm::mat4(1.0f);
+    auto proj = glm::mat4(1.0f);
+    proj = glm::perspective(glm::radians(90.f), ((float)_width / (float)_height), .1f, 100.f);
+    view = glm::translate(view, glm::vec3(0, 0, -2.f));
+    auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
+    auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
+    auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
-        // glUseProgram(myShaderProgram);
-        float greenValue = (std::sin(glfwGetTime())+1)/2;
-        mySP.setUniform1("myfloat", greenValue);
+        float sinf = (std::sin(glfwGetTime())+1)/160;
+        mySP.setUniform1("myfloat", sinf);
+        modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
         /* Poll for and process events */
         glfwPollEvents();
     }
