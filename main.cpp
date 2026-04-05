@@ -8,9 +8,30 @@
 int SEED = 0;
 static int _width = 1920;
 static int _height = 1080;
+
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+void tempMCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        std::cout<<"pressed\n";
+    }
+    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        std::cout<<"released\n";
+    }
+    // if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    // {
+    //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // }
+    // else{
+    //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    // }
 }
 
 float randomFloat()
@@ -19,7 +40,28 @@ float randomFloat()
     return (float)(rand()) / (float)(RAND_MAX);
 }
 
+void processInput(GLFWwindow *window)
+{
+    constexpr float speed = 0.5f;
+    auto camTranslate = glm::vec3(0.f);
 
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        camTranslate.z -= speed;
+    }        
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        camTranslate.x -= speed;
+    }    
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        camTranslate.z += speed;        
+    }    
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {   
+        camTranslate.x += speed;
+    }
+}
 //sets the vertex attribute to:
 //0=position
 //1=color
@@ -84,6 +126,9 @@ int main(void)
         return -1;
     }    
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
+    
+    glfwSetMouseButtonCallback(window, tempMCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     auto mySP = shaderProgram{};
     mySP.attachVS("assets/shaders/Vertex1.glsl");
@@ -138,9 +183,11 @@ int main(void)
     auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        processInput(window);
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
         myCamera.update();

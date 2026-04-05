@@ -17,7 +17,7 @@
 static int GL_SUCC=0;
 static char GL_ERR_INFO[512]{};
 
-static float cube[] = {
+constexpr float cube[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
