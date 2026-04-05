@@ -22,3 +22,9 @@ target_link_libraries(renderer glad)
 target_link_libraries(renderer OpenGL::GL)
 target_link_libraries(renderer glfw)
 
+#copys files in the asset folder to the output(build) folder
+add_custom_command(TARGET renderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:renderer>/assets
+)

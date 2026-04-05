@@ -1,12 +1,13 @@
 #include"main.h"
 #include "include/shader.h"
+#include "camera.h"
 #include "texture.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 int SEED = 0;
-static int _width = 2560;
-static int _height = 1440;
+static int _width = 1920;
+static int _height = 1080;
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -85,8 +86,8 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
     auto mySP = shaderProgram{};
-    mySP.attachVS("shaders/Vertex1.glsl");
-    mySP.attachFS("shaders/Frag1.glsl");
+    mySP.attachVS("assets/shaders/Vertex1.glsl");
+    mySP.attachFS("assets/shaders/Frag1.glsl");
     mySP.activate();
     glClearColor( randomFloat(), randomFloat(), randomFloat(), randomFloat() );
 
@@ -117,14 +118,15 @@ int main(void)
     setVA_PT();
     stbi_set_flip_vertically_on_load(true);  
     auto tex1 = texture{};
-    tex1.createFromFile("textures/container.jpg", true);  
+    tex1.createFromFile("assets/textures/container.jpg", true);  
     tex1.bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);  
     auto tex2 = texture{};
-    tex2.createFromFile("textures/kool.png", true);
+    tex2.createFromFile("assets/textures/kool.png", true);
     tex2.bindToActiveUnit();
     mySP.setUniform1("myTex", 0);
     mySP.setUniform1("myTex2", 1);
+    auto myCamera = camera{};
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     auto modelTransform = glm::mat4(1.0f);
@@ -132,6 +134,7 @@ int main(void)
     auto proj = glm::mat4(1.0f);
     proj = glm::perspective(glm::radians(90.f), ((float)_width / (float)_height), .1f, 100.f);
     view = glm::translate(view, glm::vec3(0, 0, -2.f));
+    modelTransform = glm::translate(modelTransform, glm::vec3(0.f, 0.f, 1.f));
     auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
@@ -140,12 +143,13 @@ int main(void)
     {
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
+        myCamera.update();
         float sinf = (std::sin(glfwGetTime())+1)/160;
         mySP.setUniform1("myfloat", sinf);
         modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(myCamera.getLookAt()));
         glBindVertexArray(VAO);
 
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
