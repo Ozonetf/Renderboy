@@ -1,38 +1,15 @@
 #include"main.h"
-#include "include/shader.h"
-#include "camera.h"
+
+#include "shader.h"
 #include "texture.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "game.h"
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_FAILURE_USERMSG
+#include <stb_image.h>
+
 int SEED = 0;
 static int _width = 1920;
 static int _height = 1080;
-
-void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
-void tempMCallback(GLFWwindow* window, int button, int action, int mods)
-{
-    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        std::cout<<"pressed\n";
-    }
-    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        std::cout<<"released\n";
-    }
-    // if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-    // {
-    //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // }
-    // else{
-    //     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    // }
-}
 
 float randomFloat()
 {
@@ -40,28 +17,6 @@ float randomFloat()
     return (float)(rand()) / (float)(RAND_MAX);
 }
 
-void processInput(GLFWwindow *window)
-{
-    constexpr float speed = 0.5f;
-    auto camTranslate = glm::vec3(0.f);
-
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        camTranslate.z -= speed;
-    }        
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        camTranslate.x -= speed;
-    }    
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        camTranslate.z += speed;        
-    }    
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {   
-        camTranslate.x += speed;
-    }
-}
 //sets the vertex attribute to:
 //0=position
 //1=color
@@ -109,26 +64,15 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(_width, _height, "MyOpenGLProject", NULL, NULL);
-    if (!window)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+    auto& game = Game::instance();
+    GL_SUCC = game.init(_width, _height); 
+    if(GL_SUCC == -1)return -1;
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
-    }    
-    glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
-    
-    glfwSetMouseButtonCallback(window, tempMCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }        
 
     auto mySP = shaderProgram{};
     mySP.attachVS("assets/shaders/Vertex1.glsl");
@@ -171,7 +115,6 @@ int main(void)
     tex2.bindToActiveUnit();
     mySP.setUniform1("myTex", 0);
     mySP.setUniform1("myTex2", 1);
-    auto myCamera = camera{};
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     auto modelTransform = glm::mat4(1.0f);
@@ -184,26 +127,31 @@ int main(void)
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
 
+    // float currentFrame = glfwGetTime();
+    // lastFrame = currentFrame;
+
+    // auto ggg = game{};
+    // ggg.update();
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(game.m_window))
     {
-        processInput(window);
+        game.update();
+        game.render();
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
-        myCamera.update();
         float sinf = (std::sin(glfwGetTime())+1)/160;
         mySP.setUniform1("myfloat", sinf);
         modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(myCamera.getLookAt()));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(game.getCamera().getLookAt()));
         glBindVertexArray(VAO);
 
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(game.m_window);
         /* Poll for and process events */
         glfwPollEvents();
     }
