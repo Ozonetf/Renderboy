@@ -11,9 +11,14 @@ int SEED = 0;
 static int _width = 1920;
 static int _height = 1080;
 
+void glfwErrCallback(int error_code, const char* description)
+{
+    std::cerr<<std::format("GLFW error {}::{}\n", error_code, description);
+}
+
 float randomFloat()
 {
-    srand(std::time({}) + (SEED++));
+    srand(glfwGetTime() + (SEED++));
     return (float)(rand()) / (float)(RAND_MAX);
 }
 
@@ -55,6 +60,7 @@ void setVA_PT()
 
 int main(void)
 {
+    glfwSetErrorCallback(glfwErrCallback);
     /* Initialize the library */
     if (!glfwInit())
         return -1;
@@ -63,7 +69,8 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
+    glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
+    
     auto& game = Game::instance();
     GL_SUCC = game.init(_width, _height); 
     if(GL_SUCC == -1)return -1;
@@ -126,7 +133,6 @@ int main(void)
     auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
-
     // float currentFrame = glfwGetTime();
     // lastFrame = currentFrame;
 

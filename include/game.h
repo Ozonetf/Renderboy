@@ -3,15 +3,50 @@
 #include "camera.h"
 struct mouse
 {
-    double _dxpos = 0;
-    double _dypos = 0;
-    double _lastxpos = _dypos;
-    double _lastypos = _dypos;
+    double  dxpos = 0;
+    double  dypos = 0;
+    double  lastxpos = dypos;
+    double  lastypos = dypos;
+    bool    cursorHidden = false;
+
     mouse(){};
     mouse(double x, double y)
     {
-        _lastxpos = x; _lastypos = y;
+        lastxpos = x; lastypos = y;
     }
+
+    inline void update(GLFWwindow *window)
+    {
+        double curX, curY;
+        glfwGetCursorPos(window, &curX, &curY);
+        dxpos = curX - lastxpos;
+        dypos = curY - lastypos;
+        lastxpos = curX; lastypos = curY;
+        // std::cout<<std::format("DX: {}  DY: {}\n", curX, curY);
+    }
+    // inline void update(GLFWwindow *window)
+    // {
+    //     //if right mouse buttone is pressed, diable the cursor
+    //     bool rclick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS ? true : false;
+    //     if(rclick)  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //     else        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+    //     double curX, curY;
+    //     glfwGetCursorPos(window, &curX, &curY);
+    //     if(cursorHidden != rclick)
+    //     {
+    //         cursorHidden = !rclick;
+    //         dxpos = 0;
+    //         dypos = 0;
+    //     }
+    //     else
+    //     {
+    //         dxpos = curX - lastxpos;
+    //         dypos = curY - lastypos;
+    //     }        
+    //     lastxpos = curX; lastypos = curY;
+    //     std::cout<<std::format("Dx: {}      Dy: {}\n", floor(curX), floor(curY));
+    // }
 };
 
 

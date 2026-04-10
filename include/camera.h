@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include "main.h"
 #include <glm/vec3.hpp>
 #include <glm/matrix.hpp>
 #include <glm/glm.hpp>
@@ -16,6 +18,7 @@ private:
 
     // glm::vec3 cameraTarget  = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 m_pos         = glm::vec3(0.f, 0.f, 2.f);
+    glm::vec3 m_rot         = glm::vec3(0.f, 0.f, 0.f);
     glm::vec3 m_up;
     glm::vec3 m_right;
     glm::vec3 m_dir;
@@ -31,6 +34,8 @@ public:
     /// @param _pitch rotation in pitch (around the x axis)
     /// @param _yaw rotation in yaw (around the y axis)
     inline void transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw);
+
+    inline void rotatePitchYaw(float _pitch, float _yaw);
     inline void update();
 };
 Camera::Camera(/* args */)
@@ -51,6 +56,19 @@ void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
     m_lookat = glm::lookAt(m_pos, m_pos + m_dir, m_up);
 }
 
+inline void Camera::rotatePitchYaw(float _pitch, float _yaw)
+{
+    m_rot.x += _pitch;
+    m_rot.x = std::min(90.f, m_rot.x);
+    m_rot.x = std::max(-90.f, m_rot.x);
+    m_rot.y += _yaw;
+    std::cout<<std::format("Dpitch: {} Dyaw: {} m_dir: x: {} y: {} z: {}\n", _pitch, _yaw, m_rot.x, m_rot.y, m_rot.z);
+    m_dir = glm::rotateX(m_dir, glm::radians((_pitch)));
+    m_dir = glm::rotateY(m_dir, glm::radians((_yaw)));
+    m_right = getRight();
+    m_up = getUp();
+    m_lookat = glm::lookAt(m_pos, m_pos + m_dir, m_up);
+}
 // inline void camera::update()
 // {
 //     const float radius = 2.0f;
