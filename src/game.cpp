@@ -1,13 +1,8 @@
 #include "game.h"
-Game::Game()
-{
+Game::Game() : m_mouse() {
 }
 
-Game::~Game()
-{
-}
-
-int Game::init(int width, int height)
+int Game::init(const int width, const int height)
 {
     m_window = glfwCreateWindow(width, height, PROGRAM_NAME, nullptr, nullptr);
     // glfwGetCursorPos()
@@ -24,7 +19,7 @@ int Game::init(int width, int height)
     /* Make the window's context current */
     glfwMakeContextCurrent(m_window);
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    m_mouse.cursorHidden = glfwGetInputMode(m_window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED? false:true;
+    m_mouse.cursorHidden = glfwGetInputMode(m_window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED;
     glfwSetFramebufferSizeCallback(m_window, Game::framebufferResizeCallback);    
     glfwSetMouseButtonCallback(m_window, Game::mouseButtonCallback);
     glfwSetCursorPosCallback(m_window, Game::mousePosCallback);
@@ -70,12 +65,11 @@ void Game::processInput()
 
 void Game::update()
 {
-    auto curTime = glfwGetTime();
+    const auto curTime = glfwGetTime();
     m_deltaTime = curTime - m_lastFrame;
     m_lastFrame = curTime;
     processInput();
-    int newTime = static_cast<int>(curTime);
-    if(newTime != m_curTime)
+    if(const int newTime = static_cast<int>(curTime); newTime != m_curTime)
     {
         m_curTime = newTime;
         glfwSetWindowTitle(m_window, std::format("{} FPS: {}",PROGRAM_NAME, (1.0f / m_deltaTime)).c_str());

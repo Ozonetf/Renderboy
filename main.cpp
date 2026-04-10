@@ -72,7 +72,7 @@ int main(void)
     glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
     
     auto& game = Game::instance();
-    if(auto success = game.init(_width, _height); success == -1) return -1;
+    if(const auto success = game.init(_width, _height); success == -1) return -1;
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {

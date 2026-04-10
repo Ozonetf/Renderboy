@@ -27,15 +27,15 @@ public:
     ~Camera();
 
     // Returns view matric of camera with respect to location and rotation
-    inline glm::mat4 getView() const {return m_view;};
-    // Returns the projection matrix of the camera based on FOV, aspect ration and near/far plane.
-    inline glm::mat4 getProj() const {return m_proj;};
+    [[nodiscard]] glm::mat4 getView() const {return m_view;};
+    // Returns the projection matrix of the camera based on FOV, aspect ratio and near/far plane.
+    [[nodiscard]] glm::mat4 getProj() const {return m_proj;};
 
-    inline void updateRatio(float width, float height){m_proj = glm::perspective(m_fov, (width / height), m_near, m_far);};
+    void updateRatio(const float width, const float height){m_proj = glm::perspective(m_fov, (width / height), m_near, m_far);};
 
-    /// @brief update camere's transform using a translation and rotation with FPS
+    /// @brief update camera's transform using a translation and rotation with FPS
     /// @param _trans a vec3 vector representing movement in x, y, z with respect to current rotation
-    /// @param _pitch rotation in pitch (around the x axis)
-    /// @param _yaw rotation in yaw (around the y axis)
+    /// @param _pitch rotation in pitch (around the x-axis)
+    /// @param _yaw rotation in yaw (around the y-axis)
     void transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw);
 };

@@ -9,8 +9,7 @@ struct mouse
     double  lastypos = dypos;
     double  sens = 0.2;
     bool    cursorHidden = false;
-
-    mouse(){};
+    mouse() = default;
     mouse(double x, double y)
     {
         lastxpos = x; lastypos = y;
@@ -74,7 +73,6 @@ public:
     }
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
-    ~Game();
 
     int init(int width, int height);
     void update();
