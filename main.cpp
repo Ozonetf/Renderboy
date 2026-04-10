@@ -72,12 +72,11 @@ int main(void)
     glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
     
     auto& game = Game::instance();
-    GL_SUCC = game.init(_width, _height); 
-    if(GL_SUCC == -1)return -1;
+    if(auto success = game.init(_width, _height); success == -1) return -1;
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cerr << "Failed to initialize GLAD\n";
         return -1;
     }        
 
@@ -133,11 +132,7 @@ int main(void)
     auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
-    // float currentFrame = glfwGetTime();
-    // lastFrame = currentFrame;
 
-    // auto ggg = game{};
-    // ggg.update();
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(game.m_window))
     {
@@ -150,7 +145,7 @@ int main(void)
         modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(game.getCamera().getLookAt()));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(game.getCamera().getView()));
         glBindVertexArray(VAO);
 
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

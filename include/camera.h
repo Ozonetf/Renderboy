@@ -8,74 +8,34 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/projection.hpp>
 static glm::vec3 UP_DIRECTION = glm::vec3(0.f, 1.f, 0.f);
 class Camera
 {
 private:
-    // inline glm::vec3 getCamDir() const {return glm::normalize(m_pos - cameraTarget);};
-    inline glm::vec3 getRight() const {return glm::normalize(glm::cross(m_dir, UP_DIRECTION));};
-    inline glm::vec3 getUp() const {return glm::normalize(glm::cross(m_dir, m_right));};
-
-    // glm::vec3 cameraTarget  = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 m_pos         = glm::vec3(0.f, 0.f, 2.f);
-    glm::vec3 m_rot         = glm::vec3(0.f, 0.f, 0.f);
-    glm::vec3 m_up;
-    glm::vec3 m_right;
-    glm::vec3 m_dir;
-    glm::mat4 m_lookat;
+    float       m_fov     = 90;
+    float       m_near    = 0.1f;
+    float       m_far     = 100.0f;
+    glm::vec3   m_pos = glm::vec3(0.f, 0.f, 2.f);
+    glm::vec3   m_rot = glm::vec3(0.f, 0.f, 0.f);
+    glm::mat4   m_view;
+    glm::mat4   m_proj;
 public:
-    inline Camera(/* args */);
-    inline ~Camera();
+    Camera();
+    Camera(float width, float height, float fov, float near, float far);
+    ~Camera();
 
-    inline glm::mat4 getLookAt() const {return m_lookat;};
+    // Returns view matric of camera with respect to location and rotation
+    inline glm::mat4 getView() const {return m_view;};
+    // Returns the projection matrix of the camera based on FOV, aspect ration and near/far plane.
+    inline glm::mat4 getProj() const {return m_proj;};
+
+    inline void updateRatio(float width, float height){m_proj = glm::perspective(m_fov, (width / height), m_near, m_far);};
 
     /// @brief update camere's transform using a translation and rotation with FPS
     /// @param _trans a vec3 vector representing movement in x, y, z with respect to current rotation
     /// @param _pitch rotation in pitch (around the x axis)
     /// @param _yaw rotation in yaw (around the y axis)
-    inline void transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw);
-
-    inline void rotatePitchYaw(float _pitch, float _yaw);
-    inline void update();
+    void transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw);
 };
-Camera::Camera(/* args */)
-{
-    m_pos = glm::vec3(0.0f, 0.0f, 2.0f);
-    m_dir = glm::vec3(0.0f, 0.0f, -1.0f);
-    m_right = getRight();
-    m_up = getUp();
-}
-
-Camera::~Camera()
-{
-}
-
-void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
-{
-    m_pos += _trans;
-    m_lookat = glm::lookAt(m_pos, m_pos + m_dir, m_up);
-}
-
-inline void Camera::rotatePitchYaw(float _pitch, float _yaw)
-{
-    m_rot.x += _pitch;
-    m_rot.x = std::min(90.f, m_rot.x);
-    m_rot.x = std::max(-90.f, m_rot.x);
-    m_rot.y += _yaw;
-    std::cout<<std::format("Dpitch: {} Dyaw: {} m_dir: x: {} y: {} z: {}\n", _pitch, _yaw, m_rot.x, m_rot.y, m_rot.z);
-    m_dir = glm::rotateX(m_dir, glm::radians((_pitch)));
-    m_dir = glm::rotateY(m_dir, glm::radians((_yaw)));
-    m_right = getRight();
-    m_up = getUp();
-    m_lookat = glm::lookAt(m_pos, m_pos + m_dir, m_up);
-}
-// inline void camera::update()
-// {
-//     const float radius = 2.0f;
-//     m_pos.x = sin(glfwGetTime()) * radius;
-//     m_pos.z = cos(glfwGetTime()) * radius;
-//     m_dir = getCamDir();
-//     m_right = getRight();
-//     m_up = getUp();
-//     m_lookat = glm::lookAt(m_pos, cameraTarget, m_up);
-// }
