@@ -1,4 +1,4 @@
-#include "game.h"
+#include "camera.h"
 
 Camera::Camera() = default;
 Camera::~Camera() = default;
@@ -19,7 +19,7 @@ void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
     const auto rotationMatrix = glm::toMat4(glm::conjugate(quat));
 
     // rotation then translation
-    m_pos += (quat*_trans);
+    m_pos += (quat * _trans);
     // inverse translation (-m_pos)
     const auto translationMatrix = glm::translate(glm::mat4(1.0f), -m_pos);
 

@@ -1,15 +1,16 @@
 #include "game.h"
-Game::Game() : m_mouse() {
+#include <format>
+#include <iostream>
+Game::Game() : m_mouse()
+{
 }
 
 int Game::init(const int width, const int height)
 {
-    m_window = glfwCreateWindow(width, height, PROGRAM_NAME, nullptr, nullptr);
-    // glfwGetCursorPos()
-    m_mouse = mouse{static_cast<double>(width/2), static_cast<double>(height/2)};
-    m_camera = Camera{static_cast<float>(width), static_cast<float>(height), 90.f, 0.1f, 100.f};
     /* Create a windowed mode window and its OpenGL context */
-    // GLFWwindow* window = glfwCreateWindow(_width, _height, "MyOpenGLProject", NULL, NULL);
+    m_window = glfwCreateWindow(width, height, PROGRAM_NAME, nullptr, nullptr);
+    m_mouse = mouse{static_cast<double>(width) / 2, static_cast<double>(height) / 2};
+    m_camera = Camera{static_cast<float>(width), static_cast<float>(height), 90.f, 0.1f, 100.f};
     if (!m_window)
     {
         std::cerr << "Failed to create GLFW window\n";
@@ -20,44 +21,45 @@ int Game::init(const int width, const int height)
     glfwMakeContextCurrent(m_window);
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     m_mouse.cursorHidden = glfwGetInputMode(m_window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED;
-    glfwSetFramebufferSizeCallback(m_window, Game::framebufferResizeCallback);    
+    glfwSetFramebufferSizeCallback(m_window, Game::framebufferResizeCallback);
     glfwSetMouseButtonCallback(m_window, Game::mouseButtonCallback);
     glfwSetCursorPosCallback(m_window, Game::mousePosCallback);
 
     glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    m_windowHeight = height;
+    m_windowWidth = width;
     return 0;
 }
 
-
 void Game::processInput()
-{    
+{
     constexpr float speed = 0.05f;
-    auto camTranslate   = glm::vec3(0.f);
+    auto            camTranslate = glm::vec3(0.f);
     // auto camRot         = glm::vec3(0.f);
 
     m_mouse.update(m_window);
-    if(glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
     {
         camTranslate.z -= speed;
-    }        
-    if(glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
     {
         camTranslate.x -= speed;
-    }    
-    if(glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        camTranslate.z += speed;        
-    }    
-    if(glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
-    {   
+        camTranslate.z += speed;
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
+    {
         camTranslate.x += speed;
-    }    
-    if(glfwGetKey(m_window, GLFW_KEY_E) == GLFW_PRESS)
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        camTranslate.y += speed;        
-    }    
-    if(glfwGetKey(m_window, GLFW_KEY_Q) == GLFW_PRESS)
-    {   
+        camTranslate.y += speed;
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
         camTranslate.y -= speed;
     }
     m_camera.transformCamFPS(camTranslate, -m_mouse.dypos * m_mouse.sens, m_mouse.dxpos * m_mouse.sens);
@@ -69,15 +71,20 @@ void Game::update()
     m_deltaTime = curTime - m_lastFrame;
     m_lastFrame = curTime;
     processInput();
-    if(const int newTime = static_cast<int>(curTime); newTime != m_curTime)
+    if (const int newTime = static_cast<int>(curTime); newTime != m_curTime)
     {
         m_curTime = newTime;
-        glfwSetWindowTitle(m_window, std::format("{} FPS: {}",PROGRAM_NAME, (1.0f / m_deltaTime)).c_str());
+        glfwSetWindowTitle(m_window, std::format("{} FPS: {}", PROGRAM_NAME, (1.0f / m_deltaTime)).c_str());
     }
 }
 
 void Game::render()
 {
+    if (!inited)
+    {
+        inited = true;
+        instance().framebufferResizeCallback(m_window, m_windowWidth, m_windowHeight);
+    }
     return;
 }
 

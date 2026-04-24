@@ -1,19 +1,20 @@
-#include"main.h"
-
+#include "main.h"
+#include "game.h"
 #include "shader.h"
 #include "texture.h"
-#include "game.h"
+
+#include <format>
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
 
-int SEED = 0;
-static int _width = 1920;
-static int _height = 1080;
+int        SEED = 0;
+static int _width = 800;
+static int _height = 600;
 
-void glfwErrCallback(int error_code, const char* description)
+void glfwErrCallback(int error_code, const char *description)
 {
-    std::cerr<<std::format("GLFW error {}::{}\n", error_code, description);
+    std::cerr << std::format("GLFW error {}::{}\n", error_code, description);
 }
 
 float randomFloat()
@@ -22,40 +23,40 @@ float randomFloat()
     return (float)(rand()) / (float)(RAND_MAX);
 }
 
-//sets the vertex attribute to:
-//0=position
-//1=color
+// sets the vertex attribute to:
+// 0=position
+// 1=color
 void setVA_PC()
 {
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);  
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);  
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 }
 
-//sets the vertex attribute to:
-//0=position
-//1=color
-//2=texCoord
+// sets the vertex attribute to:
+// 0=position
+// 1=color
+// 2=texCoord
 void setVA_PCT()
 {
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);  
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);  
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
-    glEnableVertexAttribArray(2);  
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 }
 
-//sets the vertex attribute to:
-//0=position
-//2=texCoord
+// sets the vertex attribute to:
+// 0=position
+// 2=texCoord
 void setVA_PT()
 {
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);  
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(2);  
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 }
 
 int main(void)
@@ -70,33 +71,37 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
-    
-    auto& game = Game::instance();
-    if(const auto success = game.init(_width, _height); success == -1) return -1;
+
+    auto &game = Game::instance();
+    if (const auto success = game.init(_width, _height); success == -1)
+        return -1;
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize GLAD\n";
         return -1;
-    }        
+    }
+
+    glViewport(0, 0, _width, _height);
 
     auto mySP = shaderProgram{};
     mySP.attachVS("assets/shaders/Vertex1.glsl");
     mySP.attachFS("assets/shaders/Frag1.glsl");
     mySP.activate();
-    glClearColor( randomFloat(), randomFloat(), randomFloat(), randomFloat() );
+    glClearColor(randomFloat(), randomFloat(), randomFloat(), randomFloat());
 
     float vertices[] = {
         // positions         // colors          // texture coords
-        0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f    // top left
+        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f  // top left
     };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3    // second triangle
-    };  
+    unsigned int indices[] = {
+        // note that we start from 0!
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
     unsigned int EBO, VBO, VAO;
     glGenBuffers(1, &EBO);
     glGenBuffers(1, &VBO);
@@ -111,11 +116,11 @@ int main(void)
 
     // setVA_PCT();
     setVA_PT();
-    stbi_set_flip_vertically_on_load(true);  
+    stbi_set_flip_vertically_on_load(true);
     auto tex1 = texture{};
-    tex1.createFromFile("assets/textures/container.jpg", true);  
+    tex1.createFromFile("assets/textures/container.jpg", true);
     tex1.bindToActiveUnit();
-    glActiveTexture(GL_TEXTURE1);  
+    glActiveTexture(GL_TEXTURE1);
     auto tex2 = texture{};
     tex2.createFromFile("assets/textures/kool.png", true);
     tex2.bindToActiveUnit();
@@ -133,6 +138,7 @@ int main(void)
     auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
     auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
 
+    std::cout << "here";
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(game.m_window))
     {
@@ -140,7 +146,7 @@ int main(void)
         game.render();
         // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
         glClear(GL_COLOR_BUFFER_BIT);
-        float sinf = (std::sin(glfwGetTime())+1)/160;
+        float sinf = (std::sin(glfwGetTime()) + 1) / 160;
         mySP.setUniform1("myfloat", sinf);
         modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
