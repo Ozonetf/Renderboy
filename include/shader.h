@@ -1,5 +1,9 @@
 #pragma once
+#include "glm/fwd.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "main.h"
+#include <cassert>
+#include <format>
 #include <iostream>
 #define MAX_SHADER_SIZE 4069
 inline GLuint createVertexShader(const char *fileName)
@@ -55,8 +59,16 @@ inline GLuint createFragmentShader(const char *fileName)
 class shaderProgram
 {
   private:
+    inline GLint glGetUniformLocationSafe(const char *name)
+    {
+        auto ret = glGetUniformLocation(m_handle, name);
+        // assert(ret != -1 && "INVALID UNIFORM NAME");
+        if (ret == -1)
+            std::cerr << std::format("SHADER ERROR::INVALID UNIFORM NAME: \"{}\"\n", name);
+        return ret;
+    }
     GLuint m_handle;
-    bool   m_valid = false; // a shader program needs at minimum a vertex and fragment shader attached
+
   public:
     shaderProgram(/* args */);
     ~shaderProgram();
@@ -69,7 +81,10 @@ class shaderProgram
     {
         return m_handle;
     };
+
     template <typename T> void setUniform1(const char *uName, T in);
+
+    void setUniformMat4(const char *uName, const glm::mat4 &mat);
 };
 
 inline shaderProgram::shaderProgram(/* args */)
@@ -107,19 +122,25 @@ inline void shaderProgram::activate()
     glUseProgram(m_handle);
 }
 
+// sets a 4x4 matrix uniform in the shader by name
+inline void shaderProgram::setUniformMat4(const char *uName, const glm::mat4 &mat)
+{
+    glUniformMatrix4fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, &mat[0][0]);
+}
+
 template <> inline void shaderProgram::setUniform1<int>(const char *uName, int in)
 {
-    glUniform1i(glGetUniformLocation(m_handle, uName), in);
+    glUniform1i(glGetUniformLocationSafe(uName), in);
 }
 template <> inline void shaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
 {
-    glUniform1ui(glGetUniformLocation(m_handle, uName), in);
+    glUniform1ui(glGetUniformLocationSafe(uName), in);
 }
 template <> inline void shaderProgram::setUniform1<float>(const char *uName, float in)
 {
-    glUniform1f(glGetUniformLocation(m_handle, uName), in);
+    glUniform1f(glGetUniformLocationSafe(uName), in);
 }
 template <> inline void shaderProgram::setUniform1<double>(const char *uName, double in)
 {
-    glUniform1d(glGetUniformLocation(m_handle, uName), in);
+    glUniform1d(glGetUniformLocationSafe(uName), in);
 }

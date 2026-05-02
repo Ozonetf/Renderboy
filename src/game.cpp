@@ -1,24 +1,21 @@
 #include "game.h"
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
+#include "main.h"
 #include <format>
-#include <iostream>
+
 Game::Game() : m_mouse()
 {
 }
 
-int Game::init(const int width, const int height)
+int Game::init(GLFWwindow *_window, const int width, const int height)
 {
     /* Create a windowed mode window and its OpenGL context */
-    m_window = glfwCreateWindow(width, height, PROGRAM_NAME, nullptr, nullptr);
+    m_window = _window;
     m_mouse = mouse{static_cast<double>(width) / 2, static_cast<double>(height) / 2};
     m_camera = Camera{static_cast<float>(width), static_cast<float>(height), 90.f, 0.1f, 100.f};
-    if (!m_window)
-    {
-        std::cerr << "Failed to create GLFW window\n";
-        glfwTerminate();
-        return -1;
-    }
     /* Make the window's context current */
-    glfwMakeContextCurrent(m_window);
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     m_mouse.cursorHidden = glfwGetInputMode(m_window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED;
     glfwSetFramebufferSizeCallback(m_window, Game::framebufferResizeCallback);
@@ -26,8 +23,31 @@ int Game::init(const int width, const int height)
     glfwSetCursorPosCallback(m_window, Game::mousePosCallback);
 
     glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-    m_windowHeight = height;
-    m_windowWidth = width;
+
+    // TODO: temp fix for DPI scaling on wayland
+    float xScale, yScale;
+    glfwGetWindowContentScale(m_window, &xScale, &yScale);
+    m_windowHeight = height * yScale;
+    m_windowWidth = width * xScale;
+    m_camera.updateRatio(m_windowWidth, m_windowHeight);
+    // std::cerr << std::format("w: {}, h: {}", m_windowWidth, m_windowHeight);
+    m_objects.reserve(10);
+    for (int i = 0; i < 10; i++)
+    {
+        auto ob = GameObject{};
+        ob.init();
+        ob.setVertexData(cube);
+        ob.translate(glm::vec3(randomFloat(-30, 30), randomFloat(-30, 30), randomFloat(-30, 30)));
+        ob.scale(glm::vec3(randomFloat(1.0f, 5.0f), randomFloat(1.0f, 5.0f), randomFloat(1.0f, 5.0f)));
+        m_objects.push_back(ob);
+    }
+
+    m_shader.attachVS("assets/shaders/Vertex1.glsl");
+    m_shader.attachFS("assets/shaders/Frag1.glsl");
+    m_shader.activate();
+    glViewport(0, 0, m_windowWidth, m_windowHeight);
+    // Enable depth testing
+    glEnable(GL_DEPTH_TEST);
     return 0;
 }
 
@@ -70,22 +90,34 @@ void Game::update()
     const auto curTime = glfwGetTime();
     m_deltaTime = curTime - m_lastFrame;
     m_lastFrame = curTime;
-    processInput();
+    // update fps once every second
     if (const int newTime = static_cast<int>(curTime); newTime != m_curTime)
     {
         m_curTime = newTime;
         glfwSetWindowTitle(m_window, std::format("{} FPS: {}", PROGRAM_NAME, (1.0f / m_deltaTime)).c_str());
     }
+    processInput();
+    float sinf = (std::sin(glfwGetTime()) + 1);
+    for (auto &ob : m_objects)
+    {
+        ob.rotate(glm::vec3(0, 0, sinf));
+        ob.updateTransform();
+    }
 }
 
 void Game::render()
 {
-    if (!inited)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_shader.setUniformMat4("view", m_camera.getView());
+    m_shader.setUniformMat4("proj", m_camera.getProj());
+    // glBindVertexArray(0);
+    for (auto &ob : m_objects)
     {
-        inited = true;
-        instance().framebufferResizeCallback(m_window, m_windowWidth, m_windowHeight);
+        m_shader.setUniformMat4("transform", ob.getTransform());
+        ob.render();
     }
-    return;
+    /* Swap front and back buffers */
+    glfwSwapBuffers(m_window);
 }
 
 // unusued

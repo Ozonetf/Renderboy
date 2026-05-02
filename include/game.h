@@ -1,6 +1,8 @@
 #pragma once
+#include "GameObject.h"
 #include "camera.h"
-#include "main.h"
+#include "shader.h"
+#include <vector>
 struct mouse
 {
     double dxpos = 0;
@@ -9,7 +11,7 @@ struct mouse
     double lastypos = dypos;
     double sens = 0.2;
     bool   cursorHidden = false;
-    mouse() = default;
+    mouse() {};
     mouse(double x, double y) : lastxpos(x), lastypos(y)
     {
     }
@@ -54,8 +56,8 @@ class Game
 {
   private:
     Game();
-    void  processInput();
-    bool  inited = false;
+    void processInput();
+
     int   m_windowWidth;
     int   m_windowHeight;
     int   m_curTime = 0;
@@ -64,6 +66,8 @@ class Game
 
     mouse  m_mouse;
     Camera m_camera;
+
+    std::vector<GameObject> m_objects{};
 
   public:
     static Game &instance()
@@ -74,7 +78,7 @@ class Game
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
 
-    int  init(int width, int height);
+    int  init(GLFWwindow *_window, int width, int height);
     void update();
     void render();
 
@@ -86,5 +90,6 @@ class Game
     static void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 
-    GLFWwindow *m_window;
+    shaderProgram m_shader;
+    GLFWwindow   *m_window = nullptr;
 };

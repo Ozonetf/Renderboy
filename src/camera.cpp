@@ -23,6 +23,6 @@ void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
     // inverse translation (-m_pos)
     const auto translationMatrix = glm::translate(glm::mat4(1.0f), -m_pos);
 
-    // rotation then translation
+    // usually for matrix is T*R*S, but since camera is inversed, we do R*T
     m_view = rotationMatrix * translationMatrix;
 }

@@ -3,12 +3,13 @@
 #include "shader.h"
 #include "texture.h"
 
+#include <GL/gl.h>
 #include <format>
+#include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
 
-int        SEED = 0;
 static int _width = 800;
 static int _height = 600;
 
@@ -17,52 +18,9 @@ void glfwErrCallback(int error_code, const char *description)
     std::cerr << std::format("GLFW error {}::{}\n", error_code, description);
 }
 
-float randomFloat()
-{
-    srand(glfwGetTime() + (SEED++));
-    return (float)(rand()) / (float)(RAND_MAX);
-}
-
-// sets the vertex attribute to:
-// 0=position
-// 1=color
-void setVA_PC()
-{
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-}
-
-// sets the vertex attribute to:
-// 0=position
-// 1=color
-// 2=texCoord
-void setVA_PCT()
-{
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-}
-
-// sets the vertex attribute to:
-// 0=position
-// 2=texCoord
-void setVA_PT()
-{
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-}
-
 int main(void)
 {
-    glfwSetErrorCallback(glfwErrCallback);
-    /* Initialize the library */
+    // Initialize GLFW
     if (!glfwInit())
         return -1;
     // specify openGL to use core instead of immediate profile
@@ -71,24 +29,31 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CENTER_CURSOR, GL_TRUE);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_FALSE);
 
-    auto &game = Game::instance();
-    if (const auto success = game.init(_width, _height); success == -1)
+    // set up error callback function for GLFW, any errors thrown by GLFW
+    // will log to std error
+    glfwSetErrorCallback(glfwErrCallback);
+    // We need to create a context first before we can start
+    // calling GLAD/GL functions
+    auto _window = glfwCreateWindow(_width, _height, PROGRAM_NAME, nullptr, nullptr);
+    if (!_window)
+    {
+        std::cerr << "Failed to create GLFW window\n";
+        glfwTerminate();
         return -1;
-
+    }
+    glfwMakeContextCurrent(_window);
+    // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize GLAD\n";
         return -1;
     }
-
-    glViewport(0, 0, _width, _height);
-
-    auto mySP = shaderProgram{};
-    mySP.attachVS("assets/shaders/Vertex1.glsl");
-    mySP.attachFS("assets/shaders/Frag1.glsl");
-    mySP.activate();
-    glClearColor(randomFloat(), randomFloat(), randomFloat(), randomFloat());
+    // Create and initialize game
+    auto &game = Game::instance();
+    if (const auto success = game.init(_window, _width, _height); success == -1)
+        return -1;
 
     float vertices[] = {
         // positions         // colors          // texture coords
@@ -102,20 +67,7 @@ int main(void)
         0, 1, 3, // first triangle
         1, 2, 3  // second triangle
     };
-    unsigned int EBO, VBO, VAO;
-    glGenBuffers(1, &EBO);
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // setVA_PCT();
-    setVA_PT();
     stbi_set_flip_vertically_on_load(true);
     auto tex1 = texture{};
     tex1.createFromFile("assets/textures/container.jpg", true);
@@ -124,41 +76,19 @@ int main(void)
     auto tex2 = texture{};
     tex2.createFromFile("assets/textures/kool.png", true);
     tex2.bindToActiveUnit();
-    mySP.setUniform1("myTex", 0);
-    mySP.setUniform1("myTex2", 1);
+
+    game.m_shader.setUniform1("myTex", 0);
+    game.m_shader.setUniform1("myTex2", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    auto modelTransform = glm::mat4(1.0f);
-    auto view = glm::mat4(1.0f);
-    auto proj = glm::mat4(1.0f);
-    proj = glm::perspective(glm::radians(90.f), ((float)_width / (float)_height), .1f, 100.f);
-    view = glm::translate(view, glm::vec3(0, 0, -2.f));
-    modelTransform = glm::translate(modelTransform, glm::vec3(0.f, 0.f, 1.f));
-    auto transformLoc = glGetUniformLocation(mySP.handle(), "transform");
-    auto projLoc = glGetUniformLocation(mySP.handle(), "proj");
-    auto viewLoc = glGetUniformLocation(mySP.handle(), "view");
-
-    std::cout << "here";
+    glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(game.m_window))
     {
+        // glBindVertexArray(VertexArrayObject);
         game.update();
-        game.render();
-        // glClearColor( 0.4f, 0.3f, 0.4f, 0.0f );
-        glClear(GL_COLOR_BUFFER_BIT);
-        float sinf = (std::sin(glfwGetTime()) + 1) / 160;
-        mySP.setUniform1("myfloat", sinf);
-        modelTransform = glm::rotate(modelTransform, sinf, glm::vec3(0.0f, 1.0f, 1.0f));
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(game.getCamera().getView()));
-        glBindVertexArray(VAO);
 
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-        /* Swap front and back buffers */
-        glfwSwapBuffers(game.m_window);
+        game.render();
         /* Poll for and process events */
         glfwPollEvents();
     }
