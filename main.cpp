@@ -79,11 +79,14 @@ int main(void)
 
     game.m_shader.setUniform1("myTex", 0);
     game.m_shader.setUniform1("myTex2", 1);
+    game.m_phongShader.setUniform1("myTex", 0);
+    game.m_phongShader.setUniform1("myTex2", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
+    // glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(game.m_window))
+    bool quit = false;
+    while (!glfwWindowShouldClose(game.m_window) && quit == false)
     {
         // glBindVertexArray(VertexArrayObject);
         game.update();

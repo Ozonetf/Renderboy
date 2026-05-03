@@ -48,7 +48,6 @@ struct mouse
             dxpos = 0;
             dypos = 0;
         }
-        // std::cout<<std::format("Dx: {}      Dy: {}\n", floor(dxpos), floor(dypos));
     }
 };
 
@@ -68,6 +67,7 @@ class Game
     Camera m_camera;
 
     std::vector<GameObject> m_objects{};
+    std::vector<GameObject> m_lights{};
 
   public:
     static Game &instance()
@@ -91,5 +91,7 @@ class Game
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 
     shaderProgram m_shader;
+    shaderProgram m_phongShader;
+    shaderProgram m_lightShader;
     GLFWwindow   *m_window = nullptr;
 };

@@ -2,13 +2,9 @@
 #include "main.h"
 #include <glm/gtx/quaternion.hpp>
 
-GameObject::GameObject()
-{
-}
+GameObject::GameObject() {}
 
-GameObject::~GameObject()
-{
-}
+GameObject::~GameObject() {}
 void GameObject::updateTransform()
 {
     auto scaleMat = glm::scale(glm::mat4(1.0f), m_scale);
@@ -19,18 +15,9 @@ void GameObject::updateTransform()
     m_transform = transMat * rotMat * scaleMat;
 }
 
-void GameObject::rotate(const glm::vec3 _rot)
-{
-    m_rot += _rot;
-}
-void GameObject::translate(const glm::vec3 _trans)
-{
-    m_pos += _trans;
-}
-void GameObject::scale(const glm::vec3 _scale)
-{
-    m_scale += _scale;
-}
+void GameObject::rotate(const glm::vec3 _rot) { m_rot += _rot; }
+void GameObject::translate(const glm::vec3 _trans) { m_pos += _trans; }
+void GameObject::scale(const glm::vec3 _scale) { m_scale += _scale; }
 void GameObject::init()
 {
     glGenBuffers(1, &m_EBOhandle);
@@ -45,8 +32,8 @@ void GameObject::setVertexData(const float *vertexData)
     assert(vertexData != nullptr);
     glBindVertexArray(m_VAOhandle);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBOhandle);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 36 * 5, vertexData, GL_STATIC_DRAW);
-    setVA_PT();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 36 * 8, vertexData, GL_STATIC_DRAW);
+    setVA_PTN();
     // unbind array object when done
     glBindVertexArray(0);
 }
@@ -67,10 +54,10 @@ void GameObject::setVertexData(const float *vertexData, const int *indiceData)
 }
 
 // TODO: set up proper rendering using mesh and associated VAO, trianglecount etc
-void GameObject::render()
+void GameObject::render() const
 {
     // std::cerr << m_VAOhandle << '\n';
     glBindVertexArray(m_VAOhandle);
     glDrawArrays(GL_TRIANGLES, 0, m_triangleCount);
-    // glBindVertexArray(0);
+    glBindVertexArray(0);
 }

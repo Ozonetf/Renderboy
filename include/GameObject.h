@@ -10,17 +10,16 @@ class GameObject
     GameObject();
     ~GameObject();
 
-    inline glm::mat4 getTransform() const
-    {
-        return m_transform;
-    }
+    inline glm::mat4 getTransform() const { return m_transform; }
+    inline glm::vec3 getPos() const { return m_pos; }
+
     void updateTransform();
     void rotate(const glm::vec3 _rot);
     void translate(const glm::vec3 _trans);
     void scale(const glm::vec3 _scale);
 
     void init();
-    void render();
+    void render() const;
 
     void setVertexData(const float *vertexData);
     void setVertexData(const float *vertexData, const int *indiceData);

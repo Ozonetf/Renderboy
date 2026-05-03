@@ -13,26 +13,19 @@ class texture
     int    m_nChannels;
 
   public:
-    texture(/* args */);
+    texture() { glGenTextures(1, &m_handle); };
     ~texture() = default;
 
     // binds this texture to the current active tex unit
-    void bindToActiveUnit()
-    {
-        glBindTexture(GL_TEXTURE_2D, m_handle);
-    };
-    void createFromFile(const char *file, bool createMip);
+    inline void bindToActiveUnit() const { glBindTexture(GL_TEXTURE_2D, m_handle); };
+    void        createFromFile(const char *file, bool createMip);
 };
-
-inline texture::texture(/* args */)
-{
-    glGenTextures(1, &m_handle);
-}
 
 inline void texture::createFromFile(const char *file, bool createMip)
 {
     auto texSource = stbi_load(file, &m_width, &m_height, &m_nChannels, 0);
     bindToActiveUnit();
+    // missing texture
     if (!texSource)
     {
         std::cerr << "error loading texture: " << file << '\n';

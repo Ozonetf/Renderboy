@@ -2,12 +2,11 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#include "glm/fwd.hpp"
 #include "main.h"
 #include <format>
 
-Game::Game() : m_mouse()
-{
-}
+Game::Game() : m_mouse() {}
 
 int Game::init(GLFWwindow *_window, const int width, const int height)
 {
@@ -37,17 +36,28 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
         auto ob = GameObject{};
         ob.init();
         ob.setVertexData(cube);
-        ob.translate(glm::vec3(randomFloat(-30, 30), randomFloat(-30, 30), randomFloat(-30, 30)));
-        ob.scale(glm::vec3(randomFloat(1.0f, 5.0f), randomFloat(1.0f, 5.0f), randomFloat(1.0f, 5.0f)));
+        ob.translate(glm::vec3(randomFloat(-15, 15), randomFloat(-15, 15), randomFloat(-15, 15)));
+        ob.scale(glm::vec3(randomFloat(.2f, 2)));
         m_objects.push_back(ob);
     }
+    auto light = GameObject{};
+    light.init();
+    light.setVertexData(cube);
+    light.scale(glm::vec3(.2f));
+    m_lights.push_back(light);
 
     m_shader.attachVS("assets/shaders/Vertex1.glsl");
     m_shader.attachFS("assets/shaders/Frag1.glsl");
-    m_shader.activate();
+    m_shader.linkAndActivate();
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
+    m_phongShader.attachVS("assets/shaders/BasicVertex.vert");
+    m_phongShader.attachFS("assets/shaders/PhongLighting.frag");
+    m_phongShader.linkAndActivate();
+    m_lightShader.attachVS("assets/shaders/BasicVertex.vert");
+    m_lightShader.attachFS("assets/shaders/LightSource.frag");
+    m_lightShader.linkAndActivate();
     return 0;
 }
 
@@ -100,20 +110,40 @@ void Game::update()
     float sinf = (std::sin(glfwGetTime()) + 1);
     for (auto &ob : m_objects)
     {
-        ob.rotate(glm::vec3(0, 0, sinf));
+        ob.rotate(glm::vec3(0, 0, 1));
         ob.updateTransform();
+    }
+    for (auto &light : m_lights)
+    {
+        light.updateTransform();
     }
 }
 
 void Game::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_lightShader.activate();
+    for (const auto &light : m_lights)
+    {
+        m_lightShader.setUniformMat4("view", m_camera.getView());
+        m_lightShader.setUniformMat4("proj", m_camera.getProj());
+        m_lightShader.setUniformMat4("transform", light.getTransform());
+        m_lightShader.setUniform3("lightColor", glm::vec3(1.0f));
+        light.render();
+    }
+
+    m_shader.activate();
     m_shader.setUniformMat4("view", m_camera.getView());
     m_shader.setUniformMat4("proj", m_camera.getProj());
+
+    m_phongShader.activate();
+    m_phongShader.setUniformMat4("view", m_camera.getView());
+    m_phongShader.setUniformMat4("proj", m_camera.getProj());
+    m_phongShader.setUniform3("lightPos", m_lights.at(0).getPos());
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {
-        m_shader.setUniformMat4("transform", ob.getTransform());
+        m_phongShader.setUniformMat4("transform", ob.getTransform());
         ob.render();
     }
     /* Swap front and back buffers */
@@ -121,13 +151,9 @@ void Game::render()
 }
 
 // unusued
-void Game::mousePosCallback(GLFWwindow *window, double xpos, double ypos)
-{
-}
+void Game::mousePosCallback(GLFWwindow *window, double xpos, double ypos) {}
 // unusued
-void Game::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
-{
-}
+void Game::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {}
 
 void Game::framebufferResizeCallback(GLFWwindow *window, int width, int height)
 {

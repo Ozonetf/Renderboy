@@ -28,15 +28,9 @@ class Camera
     ~Camera();
 
     // Returns look matrix of camera with respect to the position and rotation
-    [[nodiscard]] glm::mat4 getView() const
-    {
-        return m_view;
-    };
+    [[nodiscard]] inline glm::mat4 getView() const { return m_view; };
     // Returns the projection matrix of the camera based on FOV, aspect ratio and near/far plane.
-    [[nodiscard]] glm::mat4 getProj() const
-    {
-        return m_proj;
-    };
+    [[nodiscard]] inline glm::mat4 getProj() const { return m_proj; };
 
     void updateRatio(const float width, const float height)
     {
