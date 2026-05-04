@@ -12,20 +12,20 @@ add_library(glad STATIC src/glad.c)
 target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 #cmake target
-add_executable(renderer main.cpp)
-target_include_directories(renderer PUBLIC ${CMAKE_SOURCE_DIR}/include)
+add_executable(Renderboy main.cpp)
+target_include_directories(Renderboy PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 # link glfw extern 
 add_subdirectory(extern/glfw)
 
-target_link_libraries(renderer glad)
-target_link_libraries(renderer OpenGL::GL)
-target_link_libraries(renderer glfw)
+target_link_libraries(Renderboy glad)
+target_link_libraries(Renderboy OpenGL::GL)
+target_link_libraries(Renderboy glfw)
 
 #copys files in the asset folder to the output(build) folder
-add_custom_command(TARGET renderer POST_BUILD
+add_custom_command(TARGET Renderboy POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             ${CMAKE_SOURCE_DIR}/assets
-            $<TARGET_FILE_DIR:renderer>/assets
+            $<TARGET_FILE_DIR:Renderboy>/assets
 )
