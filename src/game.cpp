@@ -37,7 +37,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
         ob.init();
         ob.setVertexData(cube);
         ob.translate(glm::vec3(randomFloat(-15, 15), randomFloat(-15, 15), randomFloat(-15, 15)));
-        ob.scale(glm::vec3(randomFloat(.2f, 2)));
+        ob.scale(glm::vec3(randomFloat(1, 3)));
         m_objects.push_back(ob);
     }
     auto light = GameObject{};
@@ -110,7 +110,7 @@ void Game::update()
     float sinf = (std::sin(glfwGetTime()) + 1);
     for (auto &ob : m_objects)
     {
-        ob.rotate(glm::vec3(0, 0, 1));
+        // ob.rotate(glm::vec3(0, 0, 1));
         ob.updateTransform();
     }
     for (auto &light : m_lights)
@@ -122,13 +122,15 @@ void Game::update()
 void Game::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    float sinvar = (sin(glfwGetTime()) + 1) / 2;
+    auto  color = glm::mix(glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), sinvar);
     m_lightShader.activate();
     for (const auto &light : m_lights)
     {
         m_lightShader.setUniformMat4("view", m_camera.getView());
         m_lightShader.setUniformMat4("proj", m_camera.getProj());
         m_lightShader.setUniformMat4("transform", light.getTransform());
-        m_lightShader.setUniform3("lightColor", glm::vec3(1.0f));
+        m_lightShader.setUniform3("lightColor", color);
         light.render();
     }
 
@@ -137,13 +139,16 @@ void Game::render()
     m_shader.setUniformMat4("proj", m_camera.getProj());
 
     m_phongShader.activate();
+    m_phongShader.setUniform3("lightColor", color);
     m_phongShader.setUniformMat4("view", m_camera.getView());
     m_phongShader.setUniformMat4("proj", m_camera.getProj());
     m_phongShader.setUniform3("lightPos", m_lights.at(0).getPos());
+    m_phongShader.setUniform3("camPos", m_camera.getPos());
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {
         m_phongShader.setUniformMat4("transform", ob.getTransform());
+        m_phongShader.setUniformMat3("normalTransform", ob.getNormalTransform());
         ob.render();
     }
     /* Swap front and back buffers */

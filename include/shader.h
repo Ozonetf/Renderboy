@@ -51,7 +51,7 @@ inline GLuint createFragmentShader(const char *fileName)
     {
         glGetShaderInfoLog(shaderhandle, 512, NULL, GL_ERR_INFO);
         std::cerr << std::format("ERROR::SHADER::VERTEX::COMPILATION_FAILED, {}\n{}\n", fileName, GL_ERR_INFO);
-        // abort();
+        abort();
     }
     return shaderhandle;
 }
@@ -71,8 +71,8 @@ class shaderProgram
     GLuint m_handle;
 
   public:
-    shaderProgram(/* args */);
-    ~shaderProgram();
+    shaderProgram() { m_handle = glCreateProgram(); };
+    ~shaderProgram() = default;
 
     void attachVS(const char *filename);
     void attachFS(const char *filename);
@@ -85,11 +85,8 @@ class shaderProgram
     template <typename T> void setUniform3(const char *uName, T in);
 
     void setUniformMat4(const char *uName, const glm::mat4 &mat);
+    void setUniformMat3(const char *uName, const glm::mat3 &mat);
 };
-
-inline shaderProgram::shaderProgram(/* args */) { m_handle = glCreateProgram(); }
-
-inline shaderProgram::~shaderProgram() {}
 
 inline void shaderProgram::attachVS(const char *filename)
 {
@@ -121,6 +118,12 @@ inline void shaderProgram::linkAndActivate()
 inline void shaderProgram::setUniformMat4(const char *uName, const glm::mat4 &mat)
 {
     glUniformMatrix4fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+// sets a 4x4 matrix uniform in the shader by name
+inline void shaderProgram::setUniformMat3(const char *uName, const glm::mat3 &mat)
+{
+    glUniformMatrix3fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 template <> inline void shaderProgram::setUniform1<int>(const char *uName, int in)

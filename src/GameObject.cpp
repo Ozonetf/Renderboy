@@ -1,10 +1,8 @@
 #include "GameObject.h"
+#include "glm/matrix.hpp"
 #include "main.h"
 #include <glm/gtx/quaternion.hpp>
 
-GameObject::GameObject() {}
-
-GameObject::~GameObject() {}
 void GameObject::updateTransform()
 {
     auto scaleMat = glm::scale(glm::mat4(1.0f), m_scale);
@@ -13,16 +11,15 @@ void GameObject::updateTransform()
     auto transMat = glm::translate(glm::mat4(1.0f), m_pos);
     // S*R*T, matrix mult is reversed
     m_transform = transMat * rotMat * scaleMat;
+    m_normalMatrix = glm::mat3(glm::transpose(glm::inverse(m_transform)));
 }
 
-void GameObject::rotate(const glm::vec3 _rot) { m_rot += _rot; }
-void GameObject::translate(const glm::vec3 _trans) { m_pos += _trans; }
-void GameObject::scale(const glm::vec3 _scale) { m_scale += _scale; }
 void GameObject::init()
 {
     glGenBuffers(1, &m_EBOhandle);
     glGenBuffers(1, &m_VBOhandle);
     glGenVertexArrays(1, &m_VAOhandle);
+    updateTransform();
 }
 
 // TODO: correctly pass in the size of buffer data with respect to the
@@ -58,6 +55,6 @@ void GameObject::render() const
 {
     // std::cerr << m_VAOhandle << '\n';
     glBindVertexArray(m_VAOhandle);
-    glDrawArrays(GL_TRIANGLES, 0, m_triangleCount);
+    glDrawArrays(GL_TRIANGLES, 0, m_vertCount);
     glBindVertexArray(0);
 }

@@ -27,6 +27,7 @@ class Camera
     Camera(float width, float height, float fov, float near, float far);
     ~Camera();
 
+    inline glm::vec3 getPos() const { return m_pos; };
     // Returns look matrix of camera with respect to the position and rotation
     [[nodiscard]] inline glm::mat4 getView() const { return m_view; };
     // Returns the projection matrix of the camera based on FOV, aspect ratio and near/far plane.
