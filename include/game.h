@@ -3,6 +3,20 @@
 #include "camera.h"
 #include "shader.h"
 #include <vector>
+
+using namespace glm;
+struct PointLight
+{
+    vec3  _pos = vec3(0);
+    vec3  _color = vec3(1);
+    float _constant = 1;
+    float _linear = 0.14f;
+    float _quadratic = 0.07f;
+
+    PointLight() = default;
+    PointLight(vec3 pos) : _pos(pos) {};
+};
+
 struct mouse
 {
     double dxpos = 0;
@@ -12,9 +26,7 @@ struct mouse
     double sens = 0.2;
     bool   cursorHidden = false;
     mouse() {};
-    mouse(double x, double y) : lastxpos(x), lastypos(y)
-    {
-    }
+    mouse(double x, double y) : lastxpos(x), lastypos(y) {}
     inline void update(GLFWwindow *window)
     {
         // if right mouse buttone is pressed, diable the cursor
@@ -63,11 +75,12 @@ class Game
     float m_deltaTime = 0.0f; // Time between current frame and last frame
     float m_lastFrame = 0.0f; // Time of last frame
 
-    mouse  m_mouse;
-    Camera m_camera;
+    mouse      m_mouse;
+    Camera     m_camera;
+    GameObject m_lightMesh;
 
     std::vector<GameObject> m_objects{};
-    std::vector<GameObject> m_lights{};
+    std::vector<PointLight> m_pointLights{};
 
   public:
     static Game &instance()
@@ -82,15 +95,11 @@ class Game
     void update();
     void render();
 
-    inline Camera getCamera() const
-    {
-        return m_camera;
-    };
-    static void mousePosCallback(GLFWwindow *window, double xpos, double ypos);
-    static void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-    static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
+    inline Camera getCamera() const { return m_camera; };
+    static void   mousePosCallback(GLFWwindow *window, double xpos, double ypos);
+    static void   mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+    static void   framebufferResizeCallback(GLFWwindow *window, int width, int height);
 
-    shaderProgram m_shader;
     shaderProgram m_phongShader;
     shaderProgram m_lightShader;
     GLFWwindow   *m_window = nullptr;

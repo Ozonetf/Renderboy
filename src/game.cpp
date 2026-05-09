@@ -40,15 +40,15 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
         ob.scale(glm::vec3(randomFloat(1, 3)));
         m_objects.push_back(ob);
     }
-    auto light = GameObject{};
-    light.init();
-    light.setVertexData(cube);
-    light.scale(glm::vec3(.2f));
-    m_lights.push_back(light);
+    m_lightMesh.init();
+    m_lightMesh.setVertexData(cube);
+    m_lightMesh.scale(glm::vec3(-0.8f));
 
-    m_shader.attachVS("assets/shaders/Vertex1.glsl");
-    m_shader.attachFS("assets/shaders/Frag1.glsl");
-    m_shader.linkAndActivate();
+    for (auto i = 0; i < 5; ++i)
+    {
+        m_pointLights.emplace_back(glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7)));
+    }
+
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
@@ -107,15 +107,15 @@ void Game::update()
         glfwSetWindowTitle(m_window, std::format("{} FPS: {}", PROGRAM_NAME, (1.0f / m_deltaTime)).c_str());
     }
     processInput();
-    float sinf = (std::sin(glfwGetTime()) + 1);
+    float sinvar = (sin(glfwGetTime()) + 1) / 2;
+    for (auto &light : m_pointLights)
+    {
+        light._color = glm::mix(light._pos, -light._pos, sinvar);
+    }
     for (auto &ob : m_objects)
     {
         // ob.rotate(glm::vec3(0, 0, 1));
         ob.updateTransform();
-    }
-    for (auto &light : m_lights)
-    {
-        light.updateTransform();
     }
 }
 
@@ -123,27 +123,39 @@ void Game::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
-    auto  color = glm::mix(glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), sinvar);
     m_lightShader.activate();
-    for (const auto &light : m_lights)
+    m_lightShader.setUniformMat4("view", m_camera.getView());
+    m_lightShader.setUniformMat4("proj", m_camera.getProj());
+
+    // render each light with a simple mesh using m_lightMesh
+    for (const auto &pointLight : m_pointLights)
     {
-        m_lightShader.setUniformMat4("view", m_camera.getView());
-        m_lightShader.setUniformMat4("proj", m_camera.getProj());
-        m_lightShader.setUniformMat4("transform", light.getTransform());
-        m_lightShader.setUniform3("lightColor", color);
-        light.render();
+        m_lightShader.setUniform3("lightColor", pointLight._color);
+
+        m_lightMesh.m_pos = pointLight._pos;
+        m_lightMesh.updateTransform();
+        m_lightShader.setUniformMat4("transform", m_lightMesh.getTransform());
+        m_lightMesh.render();
     }
 
-    m_shader.activate();
-    m_shader.setUniformMat4("view", m_camera.getView());
-    m_shader.setUniformMat4("proj", m_camera.getProj());
-
     m_phongShader.activate();
-    m_phongShader.setUniform3("lightColor", color);
+    // m_phongShader.setUniform3("lightColor", color);
     m_phongShader.setUniformMat4("view", m_camera.getView());
     m_phongShader.setUniformMat4("proj", m_camera.getProj());
-    m_phongShader.setUniform3("lightPos", m_lights.at(0).getPos());
     m_phongShader.setUniform3("camPos", m_camera.getPos());
+
+    // TODO: refactor this disgusting shit
+    m_phongShader.setUniform3("pointLightList[0].pos", m_pointLights.at(0)._pos);
+    m_phongShader.setUniform3("pointLightList[1].pos", m_pointLights.at(1)._pos);
+    m_phongShader.setUniform3("pointLightList[2].pos", m_pointLights.at(2)._pos);
+    m_phongShader.setUniform3("pointLightList[3].pos", m_pointLights.at(3)._pos);
+    m_phongShader.setUniform3("pointLightList[4].pos", m_pointLights.at(4)._pos);
+    m_phongShader.setUniform3("pointLightList[0].color", m_pointLights.at(0)._color);
+    m_phongShader.setUniform3("pointLightList[1].color", m_pointLights.at(1)._color);
+    m_phongShader.setUniform3("pointLightList[2].color", m_pointLights.at(2)._color);
+    m_phongShader.setUniform3("pointLightList[3].color", m_pointLights.at(3)._color);
+    m_phongShader.setUniform3("pointLightList[4].color", m_pointLights.at(3)._color);
+
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {

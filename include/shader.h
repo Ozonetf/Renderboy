@@ -3,6 +3,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "main.h"
 #include <cassert>
+#include <cstddef>
 #include <format>
 #include <iostream>
 #define MAX_SHADER_SIZE 4069
@@ -26,7 +27,7 @@ inline GLuint createVertexShader(const char *fileName)
     {
         glGetShaderInfoLog(VShandle, 512, NULL, GL_ERR_INFO);
         std::cerr << std::format("ERROR::SHADER::VERTEX::COMPILATION_FAILED, {}\n{}\n", fileName, GL_ERR_INFO);
-        // abort();
+        abort();
     }
     return VShandle;
 }
@@ -50,7 +51,7 @@ inline GLuint createFragmentShader(const char *fileName)
     if (!GL_SUCC)
     {
         glGetShaderInfoLog(shaderhandle, 512, NULL, GL_ERR_INFO);
-        std::cerr << std::format("ERROR::SHADER::VERTEX::COMPILATION_FAILED, {}\n{}\n", fileName, GL_ERR_INFO);
+        std::cerr << std::format("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, {}\n{}\n", fileName, GL_ERR_INFO);
         abort();
     }
     return shaderhandle;
@@ -81,8 +82,12 @@ class shaderProgram
     inline void   activate() const { glUseProgram(m_handle); };
     inline GLuint handle() const { return m_handle; };
 
-    template <typename T> void setUniform1(const char *uName, T in);
-    template <typename T> void setUniform3(const char *uName, T in);
+    template <typename T>
+    void setUniform1(const char *uName, T in);
+    template <typename T>
+    void setUniform3(const char *uName, T in);
+    template <typename T>
+    void setUniform3(const char *uName, T in, size_t count);
 
     void setUniformMat4(const char *uName, const glm::mat4 &mat);
     void setUniformMat3(const char *uName, const glm::mat3 &mat);
@@ -126,19 +131,23 @@ inline void shaderProgram::setUniformMat3(const char *uName, const glm::mat3 &ma
     glUniformMatrix3fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-template <> inline void shaderProgram::setUniform1<int>(const char *uName, int in)
+template <>
+inline void shaderProgram::setUniform1<int>(const char *uName, int in)
 {
     glUniform1i(glGetUniformLocationSafe(uName), in);
 }
-template <> inline void shaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
+template <>
+inline void shaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
 {
     glUniform1ui(glGetUniformLocationSafe(uName), in);
 }
-template <> inline void shaderProgram::setUniform1<float>(const char *uName, float in)
+template <>
+inline void shaderProgram::setUniform1<float>(const char *uName, float in)
 {
     glUniform1f(glGetUniformLocationSafe(uName), in);
 }
-template <> inline void shaderProgram::setUniform1<double>(const char *uName, double in)
+template <>
+inline void shaderProgram::setUniform1<double>(const char *uName, double in)
 {
     glUniform1d(glGetUniformLocationSafe(uName), in);
 }
@@ -147,4 +156,11 @@ template <>
 inline void shaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in)
 {
     glUniform3fv(glGetUniformLocationSafe(uName), 1, value_ptr(in));
+}
+
+template <>
+inline void shaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in,
+                                                                size_t count)
+{
+    glUniform3fv(glGetUniformLocationSafe(uName), count, value_ptr(in));
 }

@@ -1,37 +1,65 @@
 #version 330 core
+#define N_POINT_LIGHTS 5
+
+struct PointLight {
+    vec3 pos;
+    vec3 color;
+};
 
 in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoord;
 
-uniform vec3 lightColor;
-uniform vec3 lightPos;
+uniform PointLight pointLightList[N_POINT_LIGHTS];
+// uniform vec3 u_lightColor;
+// uniform vec3 lightPos;
 uniform vec3 camPos;
-uniform sampler2D myTex;
-uniform sampler2D myTex2;
+uniform sampler2D albedoMap;
+uniform sampler2D shinenessMap;
 
 out vec4 FragColor;
 
 float specularStrength = 0.5;
 float specularExp = 32;
 float ambientStrength = 0.1;
-void main()
+
+float attenuation(float distance, float constant, float linear, float quadratic)
 {
-    vec3 ambient = lightColor * ambientStrength;
-    vec3 norm = normalize(normal);
+    return 1.0 / (constant + (linear * distance) + (quadratic * (distance * distance)));
+}
+
+vec3 calculatePointLight(PointLight light, vec3 fragPos, vec3 fragNorm, vec3 viewDir)
+{
+    float distToLight = length(light.pos - fragPos);
+    float at = attenuation(distToLight, 1, 0.09, 0.032);
+
+    vec3 albedo = vec3(texture(albedoMap, texCoord));
+    // vec3 shineness = vec3(1);
+    vec3 shineness = vec3(texture(shinenessMap, texCoord));
     // lightDir is a vector from fragPos to lightPos
-    vec3 lightDir = normalize(lightPos - fragPos);
-    float diff = max(dot(norm, lightDir), 0);
-    vec3 difuse = lightColor * diff;
+    vec3 lightDir = normalize(light.pos - fragPos);
+
+    float diff = max(dot(fragNorm, lightDir), 0);
 
     // negate lightDir as we want the reflected dir to ber
     // in the same direction as the viewDir, imagine looking
     // onto the polygon/fragment
-    vec3 reflected = reflect(-lightDir, norm);
-    vec3 viewDir = normalize(camPos - fragPos);
+    vec3 reflected = reflect(-lightDir, fragNorm);
     float spec = pow(max(dot(viewDir, reflected), 0.0), specularExp);
-    vec3 specular = lightColor * specularStrength * spec;
 
-    vec4 objColor = mix(texture(myTex, texCoord), texture(myTex2, texCoord), 1);
-    FragColor = objColor * vec4((ambient + diff + specular), 1);
+    vec3 ambient = at * albedo * light.color * ambientStrength;
+    vec3 diffuse = at * albedo * light.color * diff;
+    vec3 specular = at * shineness * light.color * spec;
+    return (ambient + diffuse + specular);
+}
+
+void main()
+{
+    vec3 finalColor = vec3(0);
+    vec3 norm = normalize(normal);
+    vec3 viewDir = normalize(camPos - fragPos);
+    for (int i = 0; i < N_POINT_LIGHTS; ++i)
+        finalColor += calculatePointLight(pointLightList[i], fragPos, norm, viewDir);
+
+    FragColor = vec4(finalColor, 1);
 }

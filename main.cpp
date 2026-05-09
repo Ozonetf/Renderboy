@@ -70,17 +70,15 @@ int main(void)
 
     stbi_set_flip_vertically_on_load(true);
     auto tex1 = texture{};
-    tex1.createFromFile("assets/textures/container.jpg", true);
+    tex1.createFromFile("assets/textures/container2_albedo.png", true);
     tex1.bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);
     auto tex2 = texture{};
-    tex2.createFromFile("assets/textures/kool.png", true);
+    tex2.createFromFile("assets/textures/container2_shininess.png", true);
     tex2.bindToActiveUnit();
 
-    game.m_shader.setUniform1("myTex", 0);
-    game.m_shader.setUniform1("myTex2", 1);
-    game.m_phongShader.setUniform1("myTex", 0);
-    game.m_phongShader.setUniform1("myTex2", 1);
+    game.m_phongShader.setUniform1("albedoMap", 0);
+    game.m_phongShader.setUniform1("shinenessMap", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // glClearColor(0.4f, 0.3f, 0.4f, 0.0f);

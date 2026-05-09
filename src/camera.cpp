@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <algorithm>
 
 Camera::Camera() = default;
 Camera::~Camera() = default;
