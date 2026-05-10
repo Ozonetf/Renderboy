@@ -1,4 +1,5 @@
 #include "main.h"
+#include "GLFW/glfw3.h"
 #include "game.h"
 #include "shader.h"
 #include "texture.h"
@@ -18,6 +19,10 @@ void glfwErrCallback(int error_code, const char *description)
     std::cerr << std::format("GLFW error {}::{}\n", error_code, description);
 }
 
+void winResizeCallback(GLFWwindow *window, int width, int height)
+{
+    std::cerr << std::format("x: {} y: {}\n", width, height);
+}
 int main(void)
 {
     // Initialize GLFW
@@ -81,14 +86,25 @@ int main(void)
     game.m_phongShader.setUniform1("shinenessMap", 1);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    {
+        // Window desc
+        auto monitor = glfwGetPrimaryMonitor();
+        int  px, py;
+        glfwGetMonitorPhysicalSize(monitor, &px, &py);
+        std::cerr << std::format("Display:{}\nDimensions x: {}mm y:{}mm\n", glfwGetMonitorName(monitor), px, py);
+        float fx, fy;
+        glfwGetMonitorContentScale(monitor, &fx, &fy);
+        std::cerr << std::format("scale x: {} y:{}\n", fx, fy);
+        glfwGetWindowContentScale(_window, &fx, &fy);
+        std::cerr << std::format("window scale x: {} y:{}\n", fx, fy);
+    }
+
     // glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
     /* Loop until the user closes the window */
     bool quit = false;
     while (!glfwWindowShouldClose(game.m_window) && quit == false)
     {
-        // glBindVertexArray(VertexArrayObject);
         game.update();
-
         game.render();
         /* Poll for and process events */
         glfwPollEvents();

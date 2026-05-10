@@ -16,6 +16,9 @@ void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
     m_rot.x = std::max(-89.f, m_rot.x);
     m_rot.y -= _yaw;
     const auto quat = glm::quat(glm::radians(m_rot));
+
+    // update camera front
+    m_front = glm::normalize(quat * FRONT_DIRECTION);
     // Inverse rotation = conjugate (for unit quaternions)
     const auto rotationMatrix = glm::toMat4(glm::conjugate(quat));
 

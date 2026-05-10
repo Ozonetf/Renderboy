@@ -6,8 +6,6 @@
 #include "main.h"
 #include <format>
 
-Game::Game() : m_mouse() {}
-
 int Game::init(GLFWwindow *_window, const int width, const int height)
 {
     /* Create a windowed mode window and its OpenGL context */
@@ -26,6 +24,8 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     // TODO: temp fix for DPI scaling on wayland
     float xScale, yScale;
     glfwGetWindowContentScale(m_window, &xScale, &yScale);
+    // NB: m_windowHeight annd Width are the actual pixel count of the window, accounting
+    // in DPI scailing per DE
     m_windowHeight = height * yScale;
     m_windowWidth = width * xScale;
     m_camera.updateRatio(m_windowWidth, m_windowHeight);
@@ -46,7 +46,8 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
 
     for (auto i = 0; i < 5; ++i)
     {
-        m_pointLights.emplace_back(glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7)));
+        m_pointLights.push_back({._pos = glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7))});
+        // m_pointLights.emplace_back(glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7)));
     }
 
     glViewport(0, 0, m_windowWidth, m_windowHeight);
@@ -68,6 +69,10 @@ void Game::processInput()
     // auto camRot         = glm::vec3(0.f);
 
     m_mouse.update(m_window);
+    if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+    }
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
     {
         camTranslate.z -= speed;
@@ -91,6 +96,10 @@ void Game::processInput()
     if (glfwGetKey(m_window, GLFW_KEY_Q) == GLFW_PRESS)
     {
         camTranslate.y -= speed;
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_F) == GLFW_RELEASE)
+    {
+        m_flashlight._on = !m_flashlight._on;
     }
     m_camera.transformCamFPS(camTranslate, -m_mouse.dypos * m_mouse.sens, m_mouse.dxpos * m_mouse.sens);
 }
@@ -117,6 +126,8 @@ void Game::update()
         // ob.rotate(glm::vec3(0, 0, 1));
         ob.updateTransform();
     }
+    m_flashlight._pos = m_camera.getPos();
+    m_flashlight._dir = m_camera.getFront();
 }
 
 void Game::render()
@@ -156,6 +167,10 @@ void Game::render()
     m_phongShader.setUniform3("pointLightList[3].color", m_pointLights.at(3)._color);
     m_phongShader.setUniform3("pointLightList[4].color", m_pointLights.at(3)._color);
 
+    m_phongShader.setUniform3("u_flashlight.pos", m_flashlight._pos);
+    m_phongShader.setUniform3("u_flashlight.dir", m_flashlight._dir);
+
+    m_phongShader.setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {

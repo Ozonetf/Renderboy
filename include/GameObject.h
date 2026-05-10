@@ -16,6 +16,7 @@ class GameObject
     inline void translate(const glm::vec3 _trans) { m_pos += _trans; };
     inline void scale(const glm::vec3 _scale) { m_scale += _scale; };
     // inline glm::vec3 getPos() const { return m_pos; }
+
     inline glm::mat3 getNormalTransform() { return m_normalMatrix; };
     inline glm::mat4 getTransform() const { return m_transform; }
 

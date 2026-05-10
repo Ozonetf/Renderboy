@@ -11,6 +11,7 @@
 #include <glm/vec3.hpp>
 
 static glm::vec3 UP_DIRECTION = glm::vec3(0.f, 1.f, 0.f);
+static glm::vec3 FRONT_DIRECTION = glm::vec3(0, 0, -1.f); // OpenGL is righ hand, -Z is front
 class Camera
 {
   private:
@@ -19,6 +20,7 @@ class Camera
     float     m_far = 100.0f;
     glm::vec3 m_pos = glm::vec3(0.f, 0.f, 2.f);
     glm::vec3 m_rot = glm::vec3(0.f, 0.f, 0.f);
+    glm::vec3 m_front = FRONT_DIRECTION;
     glm::mat4 m_view = glm::mat4(1.0f);
     glm::mat4 m_proj = glm::mat4(1.0f);
 
@@ -28,6 +30,8 @@ class Camera
     ~Camera();
 
     inline glm::vec3 getPos() const { return m_pos; };
+    inline glm::vec3 getDir() const { return m_rot; };
+    inline glm::vec3 getFront() const { return m_front; };
     // Returns look matrix of camera with respect to the position and rotation
     [[nodiscard]] inline glm::mat4 getView() const { return m_view; };
     // Returns the projection matrix of the camera based on FOV, aspect ratio and near/far plane.

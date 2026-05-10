@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "camera.h"
+#include "glm/trigonometric.hpp"
 #include "shader.h"
 #include <vector>
 
@@ -12,9 +13,21 @@ struct PointLight
     float _constant = 1;
     float _linear = 0.14f;
     float _quadratic = 0.07f;
+};
 
-    PointLight() = default;
-    PointLight(vec3 pos) : _pos(pos) {};
+struct SpotLight
+{
+    vec3 _pos = vec3(0);
+    vec3 _dir = vec3(0);
+    vec3 _color = vec3(1);
+    // _outer is the angle from the middle of light ray
+    // to the cut off angle IN DEGREES
+    float _outer = 45 / 2.f;
+    float _inner = 45 / 2.f;
+    bool  _on = false;
+
+    inline float outerCutOff() { return glm::cos(glm::radians(_outer)); };
+    inline float innerCutOff() { return glm::cos(glm::radians(_inner)); };
 };
 
 struct mouse
@@ -25,8 +38,7 @@ struct mouse
     double lastypos = dypos;
     double sens = 0.2;
     bool   cursorHidden = false;
-    mouse() {};
-    mouse(double x, double y) : lastxpos(x), lastypos(y) {}
+
     inline void update(GLFWwindow *window)
     {
         // if right mouse buttone is pressed, diable the cursor
@@ -66,7 +78,7 @@ struct mouse
 class Game
 {
   private:
-    Game();
+    Game() = default;
     void processInput();
 
     int   m_windowWidth;
@@ -78,6 +90,7 @@ class Game
     mouse      m_mouse;
     Camera     m_camera;
     GameObject m_lightMesh;
+    SpotLight  m_flashlight;
 
     std::vector<GameObject> m_objects{};
     std::vector<PointLight> m_pointLights{};

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "glm/vec3.hpp"
+#include <format>
+#include <iostream>
 #include <random>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -9,6 +12,7 @@
 static int  GL_SUCC = 0;
 static char GL_ERR_INFO[512]{};
 
+inline void  printvec3(glm::vec3 v) { std::cerr << std::format("x: {} y:{} z:{}\n", v.x, v.y, v.z); }
 inline float randomFloat(float min, float max)
 {
     static std::random_device             rd;

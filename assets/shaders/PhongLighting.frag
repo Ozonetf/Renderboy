@@ -6,13 +6,19 @@ struct PointLight {
     vec3 color;
 };
 
+struct SpotLight {
+    vec3 pos;
+    vec3 dir;
+    float innerCutOff;
+    float outerCutOff;
+};
+
 in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoord;
 
 uniform PointLight pointLightList[N_POINT_LIGHTS];
-// uniform vec3 u_lightColor;
-// uniform vec3 lightPos;
+uniform SpotLight u_flashlight;
 uniform vec3 camPos;
 uniform sampler2D albedoMap;
 uniform sampler2D shinenessMap;
@@ -61,5 +67,11 @@ void main()
     for (int i = 0; i < N_POINT_LIGHTS; ++i)
         finalColor += calculatePointLight(pointLightList[i], fragPos, norm, viewDir);
 
+    vec3 spot2frag = normalize(u_flashlight.pos - fragPos);
+    float theta = dot(spot2frag, normalize(-u_flashlight.dir));
+    if (theta > u_flashlight.outerCutOff)
+    {
+        finalColor += vec3(1) * texture(albedoMap, texCoord).xyz;
+    }
     FragColor = vec4(finalColor, 1);
 }
