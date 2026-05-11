@@ -23,7 +23,7 @@ struct SpotLight
     // _outer is the angle from the middle of light ray
     // to the cut off angle IN DEGREES
     float _outer = 45 / 2.f;
-    float _inner = 45 / 2.f;
+    float _inner = 30 / 2.f;
     bool  _on = false;
 
     inline float outerCutOff() { return glm::cos(glm::radians(_outer)); };

@@ -69,9 +69,12 @@ void main()
 
     vec3 spot2frag = normalize(u_flashlight.pos - fragPos);
     float theta = dot(spot2frag, normalize(-u_flashlight.dir));
-    if (theta > u_flashlight.outerCutOff)
-    {
-        finalColor += vec3(1) * texture(albedoMap, texCoord).xyz;
-    }
+    float epsilon = u_flashlight.innerCutOff - u_flashlight.outerCutOff;
+    float spotlightIntensity = clamp((theta - u_flashlight.outerCutOff) / epsilon, 0, 1);
+    // if (theta > u_flashlight.outerCutOff)
+    // {
+    //     finalColor += vec3(1) * texture(albedoMap, texCoord).xyz;
+    // }
+    finalColor += spotlightIntensity * texture(albedoMap, texCoord).xyz;
     FragColor = vec4(finalColor, 1);
 }

@@ -171,6 +171,7 @@ void Game::render()
     m_phongShader.setUniform3("u_flashlight.dir", m_flashlight._dir);
 
     m_phongShader.setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
+    m_phongShader.setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {
