@@ -1,10 +1,8 @@
 #include "main.h"
-#include "GLFW/glfw3.h"
 #include "game.h"
 #include "shader.h"
 #include "texture.h"
 
-#include <GL/gl.h>
 #include <format>
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION

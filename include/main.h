@@ -1,7 +1,7 @@
 #pragma once
 
-#include "glm/vec3.hpp"
 #include <format>
+#include <glm/vec3.hpp>
 #include <iostream>
 #include <random>
 #define GLFW_INCLUDE_NONE

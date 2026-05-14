@@ -1,13 +1,11 @@
 #include "GameObject.h"
-#include "glm/matrix.hpp"
 #include "main.h"
-#include <glm/gtx/quaternion.hpp>
 
 void GameObject::updateTransform()
 {
     auto scaleMat = glm::scale(glm::mat4(1.0f), m_scale);
     auto quat = glm::quat(glm::radians(m_rot));
-    auto rotMat = glm::toMat4(quat);
+    auto rotMat = glm::mat4(quat);
     auto transMat = glm::translate(glm::mat4(1.0f), m_pos);
     // S*R*T, matrix mult is reversed
     m_transform = transMat * rotMat * scaleMat;

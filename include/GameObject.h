@@ -1,7 +1,8 @@
 #pragma once
 #include "main.h"
-#include <glm/fwd.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/matrix.hpp>
 #include <glm/vec3.hpp>
 class GameObject
 {

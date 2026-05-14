@@ -1,12 +1,8 @@
 #pragma once
 
-#include "glm/trigonometric.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/projection.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 #include <glm/matrix.hpp>
 #include <glm/vec3.hpp>
 

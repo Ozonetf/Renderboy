@@ -1,5 +1,6 @@
 #include "camera.h"
 #include <algorithm>
+#include <glm/ext/matrix_float4x4.hpp>
 
 Camera::Camera() = default;
 Camera::~Camera() = default;
@@ -20,7 +21,7 @@ void Camera::transformCamFPS(glm::vec3 _trans, float _pitch, float _yaw)
     // update camera front
     m_front = glm::normalize(quat * FRONT_DIRECTION);
     // Inverse rotation = conjugate (for unit quaternions)
-    const auto rotationMatrix = glm::toMat4(glm::conjugate(quat));
+    const auto rotationMatrix = glm::mat4(glm::conjugate(quat));
 
     // rotation then translation
     m_pos += (quat * _trans);
