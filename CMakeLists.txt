@@ -16,6 +16,10 @@ find_package( OpenGL REQUIRED )
 add_library(glad STATIC extern/vendor/glad.c)
 target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/extern/vendor)
 
+# add ufbx as library
+add_library(ufbx STATIC extern/vendor/ufbx.c)
+target_include_directories(ufbx PUBLIC ${CMAKE_SOURCE_DIR}/extern/vendor)
+
 #cmake target
 add_executable(Renderboy main.cpp)
 target_include_directories(Renderboy PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -33,6 +37,7 @@ if(NOT glm_FOUND)
 endif()
 
 target_link_libraries(Renderboy glad)
+target_link_libraries(Renderboy ufbx)
 target_link_libraries(Renderboy glfw)
 target_link_libraries(Renderboy glm)
 target_link_libraries(Renderboy OpenGL::GL)
