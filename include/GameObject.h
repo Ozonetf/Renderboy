@@ -1,5 +1,5 @@
 #pragma once
-#include "main.h"
+#include "Mesh.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/matrix.hpp>
@@ -25,8 +25,8 @@ class GameObject
     void init();
     void render() const;
 
-    void setVertexData(const float *vertexData);
-    void setVertexData(const float *vertexData, const int *indiceData);
+    // TODO: use smart pointers here
+    Mesh *m_mesh;
 
   private:
     glm::vec3 m_rot = glm::vec3(0.f, 0.f, 0.f);
@@ -38,9 +38,4 @@ class GameObject
     // rotation and scale
     glm::mat3 m_normalMatrix = glm::mat3();
     glm::mat4 m_transform = glm::mat4();
-
-    GLuint  m_VBOhandle;
-    GLuint  m_EBOhandle;
-    GLuint  m_VAOhandle;
-    GLsizei m_vertCount = 36;
 };

@@ -1,33 +1,34 @@
 #pragma once
 #include "GameObject.h"
 #include "camera.h"
-#include "glm/trigonometric.hpp"
 #include "shader.h"
 #include <vector>
 
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 using namespace glm;
 struct PointLight
 {
-    vec3  _pos = vec3(0);
-    vec3  _color = vec3(1);
-    float _constant = 1;
-    float _linear = 0.14f;
-    float _quadratic = 0.07f;
+    vec3  pos = vec3(0);
+    vec3  color = vec3(1);
+    float constant = 1;
+    float linear = 0.14f;
+    float quadratic = 0.07f;
 };
 
 struct SpotLight
 {
-    vec3 _pos = vec3(0);
-    vec3 _dir = vec3(0);
-    vec3 _color = vec3(1);
+    vec3 pos = vec3(0);
+    vec3 dir = vec3(0);
+    vec3 color = vec3(1);
     // _outer is the angle from the middle of light ray
     // to the cut off angle IN DEGREES
-    float _outer = 45 / 2.f;
-    float _inner = 30 / 2.f;
-    bool  _on = false;
+    float outer = 45 / 2.f;
+    float inner = 30 / 2.f;
+    bool  on = false;
 
-    inline float outerCutOff() { return glm::cos(glm::radians(_outer)); };
-    inline float innerCutOff() { return glm::cos(glm::radians(_inner)); };
+    inline float outerCutOff() { return glm::cos(glm::radians(outer)); };
+    inline float innerCutOff() { return glm::cos(glm::radians(inner)); };
 };
 
 struct mouse
@@ -92,6 +93,7 @@ class Game
     GameObject m_lightMesh;
     SpotLight  m_flashlight;
 
+    Mesh                    m_testmesh;
     std::vector<GameObject> m_objects{};
     std::vector<PointLight> m_pointLights{};
 
@@ -109,9 +111,13 @@ class Game
     void render();
 
     inline Camera getCamera() const { return m_camera; };
-    static void   mousePosCallback(GLFWwindow *window, double xpos, double ypos);
-    static void   mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-    static void   framebufferResizeCallback(GLFWwindow *window, int width, int height);
+
+    // Callback Functions
+    void        setCallbacks();
+    static void mousePosCallback(GLFWwindow *window, double xpos, double ypos);
+    static void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+    static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
+    static void keyPressCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     shaderProgram m_phongShader;
     shaderProgram m_lightShader;

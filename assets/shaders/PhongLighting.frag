@@ -11,6 +11,7 @@ struct SpotLight {
     vec3 dir;
     float innerCutOff;
     float outerCutOff;
+    float intensity;
 };
 
 in vec3 normal;
@@ -71,6 +72,6 @@ void main()
     float theta = dot(spot2frag, normalize(-u_flashlight.dir));
     float epsilon = u_flashlight.innerCutOff - u_flashlight.outerCutOff;
     float spotlightIntensity = clamp((theta - u_flashlight.outerCutOff) / epsilon, 0, 1);
-    finalColor += spotlightIntensity * texture(albedoMap, texCoord).xyz;
+    finalColor += vec3(u_flashlight.intensity) * spotlightIntensity * texture(albedoMap, texCoord).xyz;
     FragColor = vec4(finalColor, 1);
 }

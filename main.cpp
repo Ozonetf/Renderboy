@@ -2,12 +2,13 @@
 #include "game.h"
 #include "shader.h"
 #include "texture.h"
-
 #include <format>
 #include <iostream>
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
+#include <ufbx.h>
 
 static int _width = 800;
 static int _height = 600;
@@ -21,11 +22,15 @@ void winResizeCallback(GLFWwindow *window, int width, int height)
 {
     std::cerr << std::format("x: {} y: {}\n", width, height);
 }
+
 int main(void)
 {
     // Initialize GLFW
     if (!glfwInit())
+    {
+        std::cerr << "GLFW innitilization failed";
         return -1;
+    }
     // specify openGL to use core instead of immediate profile
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -46,6 +51,7 @@ int main(void)
         glfwTerminate();
         return -1;
     }
+    /* Make the window's context current */
     glfwMakeContextCurrent(_window);
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
