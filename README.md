@@ -1,39 +1,52 @@
 ## A simple, cross-platform 3D renderer/engine with OpenGL
 Simple 3D engine with OpenGL using [GLFW](https://www.glfw.org/) and [glad](https://github.com/dav1dde/glad), and other helper libraries such as [STB's image loader](https://github.com/nothings/stb).
-## Cloning and building
-Renderboy is cross-platform compatable, you will need [Git](https://git-scm.com/) and [Cmake](https://cmake.org/) installed to clone and build it. It can run 
-on Windows, Linux and MacOs*. Follow the instruction for your OS:
-## Linux
-In a desired file location:
+## Developer Quick Start
 ```
 git clone --recursive https://github.com/Ozonetf/Renderboy.git
 cd Renderboy
 cmake -B build
 cmake --build build
-```
-To run it:
-```
 ./build/Renderboy
 ```
-## Windows
-You'll need a C++/C compiler, such as [Visual Studio](https://visualstudio.microsoft.com/downloads/) with C++ workload (Desktop Development with C++ in the installer). You can also use GCC or Clang if you know what you're doing, just remember to set the cmake compiler flag:
+## Prerequisites
+Renderboy is cross-platform, however, you will need [Git](https://git-scm.com/) and [Cmake](https://cmake.org/) to clone and build it. Check other prerequisites for your OS:
+### Linux
+On Debian and derivatives like Ubuntu and Linux Mint you will need the libwayland-dev and libxkbcommon-dev packages to compile for Wayland and the xorg-dev meta-package to compile for X11. These will pull in all other dependencies.
 ```
--DCMAKE_CXX_COMPILER={}
+sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
 ```
-If you're comfortable with terminal the command are the same as the [Linux](#linux) section.
-Otherwise, download [Github Desktop](https://desktop.github.com/download/) and clone the repository. Open terminal in the folder you saved the project in then:
+On Fedora and derivatives like Red Hat you will need the wayland-devel and libxkbcommon-devel packages to compile for Wayland and the libXcursor-devel, libXi-devel, libXinerama-devel and libXrandr-devel packages to compile for X11. These will pull in all other dependencies.
+```
+sudo dnf install wayland-devel libxkbcommon-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+```
+On FreeBSD you will need the wayland, libxkbcommon and evdev-proto packages to compile for Wayland. The X11 headers are installed along the end-user X11 packages, so if you have an X server running you should have the headers as well. If not, install the xorgproto package to compile for X11.
+```
+pkg install wayland libxkbcommon evdev-proto xorgproto
+```
+On Cygwin Wayland is not supported but you will need the libXcursor-devel, libXi-devel, libXinerama-devel, libXrandr-devel and libXrender-devel packages to compile for X11. These can be found in the Libs section of the GUI installer and will pull in all other dependencies.
+
+### Windows
+You'll need a C++/C compiler, such as [Visual Studio](https://visualstudio.microsoft.com/downloads/) with C++ workload (Desktop Development with C++ in the installer). ALternaivly you can download [Winlibs](https://winlibs.com/) (recommended if you don't have visual studio), to install it run the following in the terminal:
+```
+winget install --id=BrechtSanders.WinLibs.POSIX.UCRT -e
+```
+If you are using Winlib, change the build command to:
+```
+cmake -B build -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+cmake --build build
+.\build\Renderboy
+```
+For Visual Studio:
 ```
 cmake -B build
 cmake --build build
-```
-To run it:
-```
 .\build\Debug\Renderboy.exe
 ```
-or alternitvly click open Renderboy.exe, the app is portable too just ensure to also move all folders next to it.
-## MacOs
+The executable is portable, just remember to also move all folders next to it.
+### MacOs
 In theory you should also be able to build and run on Mac, however Apple has deprecated OpenGL support so no guarantee on newer macs.
 To be tested..
+
 ## Features 
 * [x] Mouse+Keyboard Camera Control 
 * [x] Phong Lighting model
