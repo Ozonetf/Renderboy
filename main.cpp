@@ -92,13 +92,14 @@ int main(void)
 
     {
         // Window desc
+        std::cerr << std::format("Display description:\n");
         auto monitor = glfwGetPrimaryMonitor();
         int  px, py;
         glfwGetMonitorPhysicalSize(monitor, &px, &py);
         std::cerr << std::format("Display:{}\nDimensions x: {}mm y:{}mm\n", glfwGetMonitorName(monitor), px, py);
         float fx, fy;
         glfwGetMonitorContentScale(monitor, &fx, &fy);
-        std::cerr << std::format("scale x: {} y:{}\n", fx, fy);
+        std::cerr << std::format("Monitor scale x: {} y:{}\n", fx, fy);
         glfwGetWindowContentScale(_window, &fx, &fy);
         std::cerr << std::format("window scale x: {} y:{}\n", fx, fy);
     }

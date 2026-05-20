@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include "Geometry.h"
 #include "Helper.h"
-#include "glm/fwd.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -66,10 +65,10 @@ void Mesh::loadFromFile(const char *fileName, const ufbx_load_opts opts)
     // trim to only unique
     vertices.resize(m_vCount);
     std::cerr << std::format("loaded {}, vert count: {} ind count: {}\n", mesh->name.data, m_vCount, m_iCount);
-    for (const auto v : vertices)
-    {
-        printvec3(v.pos);
-    }
+    // for (const auto v : vertices)
+    // {
+    //     printvec3(v.pos);
+    // }
     bindBuffer(vertices, indices);
 }
 

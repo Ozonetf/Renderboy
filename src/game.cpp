@@ -29,7 +29,6 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
 
     m_testmesh.init();
     m_testmesh.loadFromFile("assets/smoothSphere.fbx");
-    std::cerr << std::format("testmesh icount:{}\n", m_testmesh.getIndCount());
     m_objects.reserve(10);
     for (int i = 0; i < 10; i++)
     {

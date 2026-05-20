@@ -33,7 +33,7 @@ add_subdirectory(extern/glfw)
 # link GLM
 find_package(glm QUIET)
 if(NOT glm_FOUND)
-    add_subdirectory(external/glm)
+    add_subdirectory(extern/glm)
 endif()
 
 target_link_libraries(Renderboy glad)
