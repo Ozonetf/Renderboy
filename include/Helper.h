@@ -8,14 +8,19 @@
 #include <random>
 #include <ufbx.h>
 
-inline void printvec3(glm::vec3 v) { std::cerr << std::format("x: {} y:{} z:{}\n", v.x, v.y, v.z); }
-
 inline float randomFloat(float min, float max)
 {
     static std::random_device             rd;
     static std::mt19937                   gen(rd());
     std::uniform_real_distribution<float> dist(min, max);
     return dist(gen);
+}
+
+inline void printvec3(glm::vec3 v) { std::cerr << std::format("x: {} y:{} z:{}\n", v.x, v.y, v.z); }
+
+inline glm::vec3 randVec3(float min, float max)
+{
+    return glm::vec3(randomFloat(min, max), randomFloat(min, max), randomFloat(min, max));
 }
 
 inline glm::vec3 toGLM(ufbx_vec3 _v)

@@ -53,7 +53,8 @@ To be tested..
 * [x] Texture import
 * [ ] Hot swapping shader(recompile and activate in runtime)
 * [ ] PBR
-* [ ] OBj support
+* [x] FBX and OBj mesh import
+* [ ] Full FBX scene import(light, animation, material etc.)
 * [ ] Dynamic Shadows
 * [ ] Global Illumination
 and more when I get more ideas

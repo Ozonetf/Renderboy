@@ -1,14 +1,8 @@
 #include "main.h"
 #include "game.h"
 #include "shader.h"
-#include "texture.h"
 #include <format>
 #include <iostream>
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_FAILURE_USERMSG
-#include <stb_image.h>
-#include <ufbx.h>
 
 static int _width = 800;
 static int _height = 600;
@@ -64,30 +58,10 @@ int main(void)
     if (const auto success = game.init(_window, _width, _height); success == -1)
         return -1;
 
-    float vertices[] = {
-        // positions         // colors          // texture coords
-        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-        0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f  // top left
-    };
-    unsigned int indices[] = {
-        // note that we start from 0!
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
-    stbi_set_flip_vertically_on_load(true);
-    auto tex1 = texture{};
-    tex1.createFromFile("assets/textures/container2_albedo.png", true);
-    tex1.bindToActiveUnit();
-    glActiveTexture(GL_TEXTURE1);
-    auto tex2 = texture{};
-    tex2.createFromFile("assets/textures/container2_shininess.png", true);
-    tex2.bindToActiveUnit();
-
     game.m_phongShader.setUniform1("albedoMap", 0);
     game.m_phongShader.setUniform1("shinenessMap", 1);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     {

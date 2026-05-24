@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include <stb_image.h>
 static int  GL_SUCC = 0;
 static char GL_ERR_INFO[512]{};
 

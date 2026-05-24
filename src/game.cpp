@@ -17,6 +17,12 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_camera = Camera{static_cast<float>(width), static_cast<float>(height), 90.f, 0.1f, 100.f};
     // Sets all callback function for GLFW
     setCallbacks();
+    m_assetManager.init();
+    m_assetManager.loadTextures();
+    m_assetManager.loadMeshes();
+    m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
+    glActiveTexture(GL_TEXTURE1);
+    m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
 
     // TODO: temp fix for DPI scaling on wayland
     float xScale, yScale;
@@ -27,8 +33,6 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_windowWidth = width * xScale;
     m_camera.updateRatio(m_windowWidth, m_windowHeight);
 
-    m_testmesh.init();
-    m_testmesh.loadFromFile("assets/smoothSphere.fbx");
     m_objects.reserve(10);
     for (int i = 0; i < 10; i++)
     {
@@ -36,19 +40,17 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
         ob.init();
         // ob.setVertexData(cube);
         ob.translate(glm::vec3(randomFloat(-15, 15), randomFloat(-15, 15), randomFloat(-15, 15)));
-        ob.scale(glm::vec3(randomFloat(1, 3)));
-        ob.m_mesh = &m_testmesh;
+        ob.scale(glm::vec3(1));
+        ob.m_mesh = &m_assetManager.getMesh("backpack");
         m_objects.push_back(ob);
     }
-    m_lightMesh.init();
-    // m_lightMesh.setVertexData(cube);
-    m_lightMesh.m_mesh = &m_testmesh;
-    m_lightMesh.scale(glm::vec3(-0.8f));
+    m_lightMesh.m_mesh = &m_assetManager.getMesh("sphere2");
+    m_lightMesh.scale(glm::vec3(-0.9));
 
     for (auto i = 0; i < 5; ++i)
     {
-        m_pointLights.push_back({.pos = glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7))});
-        // m_pointLights.emplace_back(glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7)));
+        m_pointLights.push_back(
+            {.pos = glm::vec3(randomFloat(-7, 7), randomFloat(-7, 7), randomFloat(-7, 7)), .color = randVec3(0, 1)});
     }
 
     glViewport(0, 0, m_windowWidth, m_windowHeight);
@@ -120,7 +122,7 @@ void Game::update()
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
     for (auto &light : m_pointLights)
     {
-        light.color = glm::vec3(1);
+        // light.color = glm::vec3(1);
         // light._color = glm::mix(light._pos, -light._pos, sinvar);
     }
     for (auto &ob : m_objects)
@@ -210,6 +212,16 @@ void Game::framebufferResizeCallback(GLFWwindow *window, int width, int height)
 
 void Game::keyPressCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS && mods == GLFW_MOD_ALT)
+    {
+        static bool wireFrame = false;
+        wireFrame = !wireFrame;
+        std::cerr << std::format("wireframe {}\n", wireFrame ? "on" : "off");
+        if (wireFrame)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
     {
         instance().m_flashlight.on = !instance().m_flashlight.on;

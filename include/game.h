@@ -1,4 +1,5 @@
 #pragma once
+#include "AssetManager.hpp"
 #include "GameObject.h"
 #include "camera.h"
 #include "shader.h"
@@ -88,12 +89,12 @@ class Game
     float m_deltaTime = 0.0f; // Time between current frame and last frame
     float m_lastFrame = 0.0f; // Time of last frame
 
-    mouse      m_mouse;
-    Camera     m_camera;
-    GameObject m_lightMesh;
-    SpotLight  m_flashlight;
+    mouse        m_mouse;
+    AssetManager m_assetManager;
+    Camera       m_camera;
+    GameObject   m_lightMesh;
+    SpotLight    m_flashlight;
 
-    Mesh                    m_testmesh;
     std::vector<GameObject> m_objects{};
     std::vector<PointLight> m_pointLights{};
 

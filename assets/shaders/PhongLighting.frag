@@ -38,7 +38,7 @@ float attenuation(float distance, float constant, float linear, float quadratic)
 vec3 calculatePointLight(PointLight light, vec3 fragPos, vec3 fragNorm, vec3 viewDir)
 {
     float distToLight = length(light.pos - fragPos);
-    float at = attenuation(distToLight, 1, 0.09, 0.032);
+    float at = attenuation(distToLight, 1, 0.045, 0.0075);
 
     vec3 albedo = vec3(texture(albedoMap, texCoord));
     // vec3 shineness = vec3(1);
@@ -56,8 +56,8 @@ vec3 calculatePointLight(PointLight light, vec3 fragPos, vec3 fragNorm, vec3 vie
 
     vec3 ambient = at * albedo * light.color * ambientStrength;
     vec3 diffuse = at * albedo * light.color * diff;
-    vec3 specular = at * shineness * light.color * spec;
-    return (ambient + diffuse + specular);
+    vec3 specular = at * albedo * light.color * spec;
+    return (ambient + specular + diffuse);
 }
 
 void main()

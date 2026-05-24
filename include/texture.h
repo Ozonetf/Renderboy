@@ -1,8 +1,9 @@
 #pragma once
 #include "main.h"
 #include <iostream>
-static int        __h, __w;
-const static auto missingTexture = stbi_load("textures/missingtex.png", &__h, &__w, NULL, 0);
+
+#define STBI_FAILURE_USERMSG
+#include <stb_image.h>
 
 class texture
 {
@@ -18,10 +19,10 @@ class texture
 
     // binds this texture to the current active tex unit
     inline void bindToActiveUnit() const { glBindTexture(GL_TEXTURE_2D, m_handle); };
-    void        createFromFile(const char *file, bool createMip);
+    bool        createFromFile(const char *file, bool createMip);
 };
 
-inline void texture::createFromFile(const char *file, bool createMip)
+inline bool texture::createFromFile(const char *file, bool createMip)
 {
     auto texSource = stbi_load(file, &m_width, &m_height, &m_nChannels, 0);
     bindToActiveUnit();
@@ -30,9 +31,7 @@ inline void texture::createFromFile(const char *file, bool createMip)
     {
         std::cerr << "error loading texture: " << file << '\n';
         std::cerr << stbi_failure_reason() << '\n';
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, __h, __w, 0, GL_RGB, GL_UNSIGNED_BYTE, missingTexture);
+        return false;
     }
     else
     {
@@ -55,4 +54,5 @@ inline void texture::createFromFile(const char *file, bool createMip)
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     stbi_image_free(texSource); // free image from mem after a gl tex has been generated
+    return true;
 }
