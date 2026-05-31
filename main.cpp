@@ -1,4 +1,5 @@
 #include "main.h"
+#include "Helper.h"
 #include "game.h"
 #include "shader.h"
 #include <format>
@@ -58,8 +59,8 @@ int main(void)
     if (const auto success = game.init(_window, _width, _height); success == -1)
         return -1;
 
-    game.m_phongShader.setUniform1("albedoMap", 0);
-    game.m_phongShader.setUniform1("shinenessMap", 1);
+    game.m_phongShader->setUniform1("albedoMap", 0);
+    game.m_phongShader->setUniform1("shinenessMap", 1);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -70,7 +71,7 @@ int main(void)
         auto monitor = glfwGetPrimaryMonitor();
         int  px, py;
         glfwGetMonitorPhysicalSize(monitor, &px, &py);
-        std::cerr << std::format("Display:{}\nDimensions x: {}mm y:{}mm\n", glfwGetMonitorName(monitor), px, py);
+        logToCerr("Display:{}\nDimensions x: {}mm y:{}mm\n", glfwGetMonitorName(monitor), px, py);
         float fx, fy;
         glfwGetMonitorContentScale(monitor, &fx, &fy);
         std::cerr << std::format("Monitor scale x: {} y:{}\n", fx, fy);

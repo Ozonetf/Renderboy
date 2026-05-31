@@ -120,7 +120,7 @@ class Game
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     static void keyPressCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    shaderProgram m_phongShader;
-    shaderProgram m_lightShader;
-    GLFWwindow   *m_window = nullptr;
+    shaderProgram *m_phongShader;
+    shaderProgram *m_lightShader;
+    GLFWwindow    *m_window = nullptr;
 };

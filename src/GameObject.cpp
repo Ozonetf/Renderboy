@@ -13,8 +13,4 @@ void GameObject::updateTransform()
 
 void GameObject::init() { updateTransform(); }
 
-// TODO: correctly pass in the size of buffer data with respect to the
-// vertex attrubute, e.g. VA_PT = vertCount * 5
-
-// TODO: set up proper rendering using mesh and associated VAO, trianglecount etc
 void GameObject::render() const { m_mesh->render(); }

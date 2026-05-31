@@ -2,6 +2,7 @@
 #include "GLFW/glfw3.h"
 #include "Helper.h"
 #include "main.h"
+#include "shader.h"
 
 #include <format>
 int Game::init(GLFWwindow *_window, const int width, const int height)
@@ -23,6 +24,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);
     m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
+    m_assetManager.loadShaderFiles();
 
     // TODO: temp fix for DPI scaling on wayland
     float xScale, yScale;
@@ -56,12 +58,8 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    m_phongShader.attachVS("assets/shaders/BasicVertex.vert");
-    m_phongShader.attachFS("assets/shaders/PhongLighting.frag");
-    m_phongShader.linkAndActivate();
-    m_lightShader.attachVS("assets/shaders/BasicVertex.vert");
-    m_lightShader.attachFS("assets/shaders/LightSource.frag");
-    m_lightShader.linkAndActivate();
+    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "PhongLighting.frag");
+    m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
     return 0;
 }
 
@@ -139,50 +137,50 @@ void Game::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
-    m_lightShader.activate();
-    m_lightShader.setUniformMat4("view", m_camera.getView());
-    m_lightShader.setUniformMat4("proj", m_camera.getProj());
+    m_lightShader->activate();
+    m_lightShader->setUniformMat4("view", m_camera.getView());
+    m_lightShader->setUniformMat4("proj", m_camera.getProj());
 
     // render each light with a simple mesh using m_lightMesh
     for (const auto &pointLight : m_pointLights)
     {
-        m_lightShader.setUniform3("lightColor", pointLight.color);
+        m_lightShader->setUniform3("lightColor", pointLight.color);
 
         m_lightMesh.m_pos = pointLight.pos;
         m_lightMesh.updateTransform();
-        m_lightShader.setUniformMat4("transform", m_lightMesh.getTransform());
+        m_lightShader->setUniformMat4("transform", m_lightMesh.getTransform());
         m_lightMesh.render();
     }
 
-    m_phongShader.activate();
+    m_phongShader->activate();
     // m_phongShader.setUniform3("lightColor", color);
-    m_phongShader.setUniformMat4("view", m_camera.getView());
-    m_phongShader.setUniformMat4("proj", m_camera.getProj());
-    m_phongShader.setUniform3("camPos", m_camera.getPos());
+    m_phongShader->setUniformMat4("view", m_camera.getView());
+    m_phongShader->setUniformMat4("proj", m_camera.getProj());
+    m_phongShader->setUniform3("camPos", m_camera.getPos());
 
     // TODO: refactor this disgusting shit
-    m_phongShader.setUniform3("pointLightList[0].pos", m_pointLights.at(0).pos);
-    m_phongShader.setUniform3("pointLightList[1].pos", m_pointLights.at(1).pos);
-    m_phongShader.setUniform3("pointLightList[2].pos", m_pointLights.at(2).pos);
-    m_phongShader.setUniform3("pointLightList[3].pos", m_pointLights.at(3).pos);
-    m_phongShader.setUniform3("pointLightList[4].pos", m_pointLights.at(4).pos);
-    m_phongShader.setUniform3("pointLightList[0].color", m_pointLights.at(0).color);
-    m_phongShader.setUniform3("pointLightList[1].color", m_pointLights.at(1).color);
-    m_phongShader.setUniform3("pointLightList[2].color", m_pointLights.at(2).color);
-    m_phongShader.setUniform3("pointLightList[3].color", m_pointLights.at(3).color);
-    m_phongShader.setUniform3("pointLightList[4].color", m_pointLights.at(3).color);
+    m_phongShader->setUniform3("pointLightList[0].pos", m_pointLights.at(0).pos);
+    m_phongShader->setUniform3("pointLightList[1].pos", m_pointLights.at(1).pos);
+    m_phongShader->setUniform3("pointLightList[2].pos", m_pointLights.at(2).pos);
+    m_phongShader->setUniform3("pointLightList[3].pos", m_pointLights.at(3).pos);
+    m_phongShader->setUniform3("pointLightList[4].pos", m_pointLights.at(4).pos);
+    m_phongShader->setUniform3("pointLightList[0].color", m_pointLights.at(0).color);
+    m_phongShader->setUniform3("pointLightList[1].color", m_pointLights.at(1).color);
+    m_phongShader->setUniform3("pointLightList[2].color", m_pointLights.at(2).color);
+    m_phongShader->setUniform3("pointLightList[3].color", m_pointLights.at(3).color);
+    m_phongShader->setUniform3("pointLightList[4].color", m_pointLights.at(3).color);
 
-    m_phongShader.setUniform3("u_flashlight.pos", m_flashlight.pos);
-    m_phongShader.setUniform3("u_flashlight.dir", m_flashlight.dir);
-    m_phongShader.setUniform1("u_flashlight.intensity", m_flashlight.on ? 1.0f : 0.0f);
+    m_phongShader->setUniform3("u_flashlight.pos", m_flashlight.pos);
+    m_phongShader->setUniform3("u_flashlight.dir", m_flashlight.dir);
+    m_phongShader->setUniform1("u_flashlight.intensity", m_flashlight.on ? 1.0f : 0.0f);
 
-    m_phongShader.setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
-    m_phongShader.setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
+    m_phongShader->setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
+    m_phongShader->setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
     // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {
-        m_phongShader.setUniformMat4("transform", ob.getTransform());
-        m_phongShader.setUniformMat3("normalTransform", ob.getNormalTransform());
+        m_phongShader->setUniformMat4("transform", ob.getTransform());
+        m_phongShader->setUniformMat3("normalTransform", ob.getNormalTransform());
         ob.render();
     }
     /* Swap front and back buffers */
@@ -221,6 +219,10 @@ void Game::keyPressCallback(GLFWwindow *window, int key, int scancode, int actio
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS && mods == GLFW_MOD_ALT)
+    {
+        instance().m_assetManager.updateShaders();
     }
     if (key == GLFW_KEY_F && action == GLFW_PRESS)
     {
