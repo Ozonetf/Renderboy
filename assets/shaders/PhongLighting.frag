@@ -28,7 +28,7 @@ out vec4 FragColor;
 
 float specularStrength = 0.5;
 float specularExp = 32;
-float ambientStrength = 0.1;
+float ambientStrength = 0.0;
 
 float attenuation(float distance, float constant, float linear, float quadratic)
 {

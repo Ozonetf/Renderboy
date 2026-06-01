@@ -2,7 +2,6 @@
 #include "GLFW/glfw3.h"
 #include "Helper.h"
 #include "main.h"
-#include "shader.h"
 
 #include <format>
 int Game::init(GLFWwindow *_window, const int width, const int height)
@@ -58,8 +57,10 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "PhongLighting.frag");
+    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "DepthBuffer.frag");
     m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
+    m_phongShader->setUniform1("albedoMap", 0);
+    m_phongShader->setUniform1("shinenessMap", 1);
     return 0;
 }
 
@@ -98,10 +99,6 @@ void Game::processInput()
     {
         camTranslate.y -= speed;
     }
-    // if (glfwGetKey(m_window, GLFW_KEY_F) == GLFW_PRESS)
-    // {
-    //     m_flashlight.on = !m_flashlight.on;
-    // }
     m_camera.transformCamFPS(camTranslate, -m_mouse.dypos * m_mouse.sens, m_mouse.dxpos * m_mouse.sens);
 }
 

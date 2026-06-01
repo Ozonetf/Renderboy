@@ -2,7 +2,7 @@
 
 #include "Mesh.h"
 #include "ShaderFile.hpp"
-#include "shader.h"
+#include "ShaderProgram.hpp"
 #include "texture.h"
 #include <filesystem>
 #include <main.h>
@@ -26,14 +26,14 @@ class AssetManager
     GLuint                   getShaderHandle(std::string shaderName, GLuint program);
     void                     updateShaders();
 
-    shaderProgram *createShaderProgram(std::string name, std::string vertexShaderName, std::string fragShaderName);
+    ShaderProgram *createShaderProgram(std::string name, std::string vertexShaderName, std::string fragShaderName);
 
   private:
     GLuint                                                 m_missingTexHandle;
     std::unordered_map<std::string, texture>               m_textures;
     std::unordered_map<std::string, Mesh>                  m_meshes;
     std::unordered_map<std::string, ShaderFile>            m_shaderFiles;
-    std::unordered_map<std::string, shaderProgram>         m_shaderPrograms;
+    std::unordered_map<std::string, ShaderProgram>         m_shaderPrograms;
     std::unordered_map<GLuint, std::unordered_set<GLuint>> m_shaderRefs;
 };
 

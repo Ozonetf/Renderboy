@@ -17,7 +17,7 @@ GLuint ShaderFile::requestHandle()
 
 // Compiles shader then returns GL handle, returns empty
 // handle (0) if proc failed
-inline GLuint ShaderFile::compile()
+GLuint ShaderFile::compile()
 {
     const auto  pathStr = this->m_dirEntry.path().string();
     const char *fileName = pathStr.c_str();

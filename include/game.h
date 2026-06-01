@@ -1,12 +1,12 @@
 #pragma once
 #include "AssetManager.hpp"
 #include "GameObject.h"
+#include "ShaderProgram.hpp"
 #include "camera.h"
-#include "shader.h"
-#include <vector>
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <vector>
 using namespace glm;
 struct PointLight
 {
@@ -120,7 +120,7 @@ class Game
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     static void keyPressCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    shaderProgram *m_phongShader;
-    shaderProgram *m_lightShader;
+    ShaderProgram *m_phongShader;
+    ShaderProgram *m_lightShader;
     GLFWwindow    *m_window = nullptr;
 };

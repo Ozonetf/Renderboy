@@ -11,6 +11,7 @@ enum ShaderType
     fragment = GL_FRAGMENT_SHADER
 };
 
+// Gets the string of shader type
 inline std::string stStr(ShaderType T)
 {
     switch (T)
@@ -30,7 +31,6 @@ class ShaderFile
     GLuint                          handle = 0;
     ShaderType                      type = none;
     std::filesystem::file_time_type lastWriteTime{};
-    // std::vector<GLuint>             programRefs{};
 
   public:
     ShaderFile() = delete;

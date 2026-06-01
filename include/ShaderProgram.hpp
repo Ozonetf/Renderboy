@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace glm;
-class shaderProgram
+class ShaderProgram
 {
   private:
     inline GLint glGetUniformLocationSafe(const char *name)
@@ -22,8 +22,8 @@ class shaderProgram
     }
 
   public:
-    shaderProgram() : m_handle(glCreateProgram()) {};
-    ~shaderProgram() = default;
+    ShaderProgram() : m_handle(glCreateProgram()) {};
+    ~ShaderProgram() = default;
 
     inline void activate() const { glUseProgram(m_handle); };
     inline void attach(GLuint shader) const { glAttachShader(m_handle, shader); };
@@ -46,7 +46,7 @@ class shaderProgram
     const GLuint m_handle;
 };
 
-inline void shaderProgram::compile(GLuint program)
+inline void ShaderProgram::compile(GLuint program)
 {
     // static GLuint  attachedShaders[5];
     // static GLsizei count;
@@ -75,7 +75,7 @@ inline void shaderProgram::compile(GLuint program)
 
 // Triggered when an attached shader is updated(hot reload), reattache all shaders,
 // link program then detach them. Job of deleting shader object is handled somewhere else
-inline void shaderProgram::reload(GLuint program)
+inline void ShaderProgram::reload(GLuint program)
 {
     compile(program);
     // for (int i = 0; i < count; ++i)
@@ -84,46 +84,46 @@ inline void shaderProgram::reload(GLuint program)
     // }
 }
 // sets a 4x4 matrix uniform in the shader by name
-inline void shaderProgram::setUniformMat4(const char *uName, const glm::mat4 &mat)
+inline void ShaderProgram::setUniformMat4(const char *uName, const glm::mat4 &mat)
 {
     glUniformMatrix4fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 // sets a 4x4 matrix uniform in the shader by name
-inline void shaderProgram::setUniformMat3(const char *uName, const glm::mat3 &mat)
+inline void ShaderProgram::setUniformMat3(const char *uName, const glm::mat3 &mat)
 {
     glUniformMatrix3fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 template <>
-inline void shaderProgram::setUniform1<int>(const char *uName, int in)
+inline void ShaderProgram::setUniform1<int>(const char *uName, int in)
 {
     glUniform1i(glGetUniformLocationSafe(uName), in);
 }
 template <>
-inline void shaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
+inline void ShaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
 {
     glUniform1ui(glGetUniformLocationSafe(uName), in);
 }
 template <>
-inline void shaderProgram::setUniform1<float>(const char *uName, float in)
+inline void ShaderProgram::setUniform1<float>(const char *uName, float in)
 {
     glUniform1f(glGetUniformLocationSafe(uName), in);
 }
 template <>
-inline void shaderProgram::setUniform1<double>(const char *uName, double in)
+inline void ShaderProgram::setUniform1<double>(const char *uName, double in)
 {
     glUniform1d(glGetUniformLocationSafe(uName), in);
 }
 
 template <>
-inline void shaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in)
+inline void ShaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in)
 {
     glUniform3fv(glGetUniformLocationSafe(uName), 1, value_ptr(in));
 }
 
 template <>
-inline void shaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in,
+inline void ShaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in,
                                                                 size_t count)
 {
     glUniform3fv(glGetUniformLocationSafe(uName), count, value_ptr(in));

@@ -1,8 +1,5 @@
 #include "AssetManager.hpp"
 #include "Helper.h"
-#include "Mesh.h"
-#include "ShaderFile.hpp"
-#include "shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <GL/gl.h>
@@ -134,11 +131,11 @@ void AssetManager::updateShaders()
     for (auto program : programReloadList)
     {
         logToCerr("updating program {}\n", program);
-        shaderProgram::reload(program);
+        ShaderProgram::reload(program);
     }
     programReloadList.clear();
 }
-shaderProgram *AssetManager::createShaderProgram(std::string name, std::string vertexShaderName,
+ShaderProgram *AssetManager::createShaderProgram(std::string name, std::string vertexShaderName,
                                                  std::string fragShaderName)
 {
     auto [iter, b] = m_shaderPrograms.try_emplace(name);
