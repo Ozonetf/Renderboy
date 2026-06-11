@@ -82,6 +82,7 @@ class Game
   private:
     Game() = default;
     void processInput();
+    void tempFrameBufferSetUp();
 
     int   m_windowWidth;
     int   m_windowHeight;
@@ -123,4 +124,8 @@ class Game
     ShaderProgram *m_phongShader;
     ShaderProgram *m_lightShader;
     GLFWwindow    *m_window = nullptr;
+    GLuint         FBO;
+    GLuint         m_quadVAO;
+    Texture        frameBufferTex;
+    ShaderProgram *m_postProcessShader;
 };

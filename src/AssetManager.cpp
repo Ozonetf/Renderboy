@@ -40,7 +40,7 @@ void AssetManager::loadTextures()
     }
 }
 
-texture &AssetManager::getTexture(std::string texName)
+Texture &AssetManager::getTexture(std::string texName)
 {
     auto tex = m_textures.find(texName);
     if (tex != m_textures.end())

@@ -4,6 +4,36 @@
 #include "main.h"
 
 #include <format>
+#include <glad/glad.h>
+
+void Game::tempFrameBufferSetUp()
+{
+    glGenFramebuffers(1, &this->FBO);
+    // GL_READ_FRAMEBUFFER or GL_DRAW_FRAMEBUFFER If a framebuffer object is bound to GL_DRAW_FRAMEBUFFER or
+    // GL_READ_FRAMEBUFFER, it becomes the target for rendering or readback operations, respectively, until it is
+    // deleted or another framebuffer is bound to the corresponding bind point.
+    // GL_FRAMBUFFER is both read and write.
+    glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+    // bind a texture as color attachment for frame buffer
+    frameBufferTex.createEmpty(this->m_windowWidth, this->m_windowHeight);
+    // set texture as frame buffer color attachment
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTex.handle(), 0);
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, frameBufferTex.handle(), 0);
+
+    // bind a render buffer as depth+stencil buffer
+    GLuint rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->m_windowWidth, this->m_windowHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        abort();
+    // unbind render buffer after setup
+    // 0 sets frame buffer to default
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 int Game::init(GLFWwindow *_window, const int width, const int height)
 {
     /* Create a windowed mode window and its OpenGL context */
@@ -20,9 +50,6 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_assetManager.init();
     m_assetManager.loadTextures();
     m_assetManager.loadMeshes();
-    m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
-    glActiveTexture(GL_TEXTURE1);
-    m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
     m_assetManager.loadShaderFiles();
 
     // TODO: temp fix for DPI scaling on wayland
@@ -57,10 +84,26 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "DepthBuffer.frag");
+    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "PhongLighting.frag");
     m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
+
+    m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
+    glActiveTexture(GL_TEXTURE1);
+    m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
+
     m_phongShader->setUniform1("albedoMap", 0);
     m_phongShader->setUniform1("shinenessMap", 1);
+    m_postProcessShader = m_assetManager.createShaderProgram("postProcess", "post_process.vert", "post_process.frag");
+
+    tempFrameBufferSetUp();
+    glGenVertexArrays(1, &this->m_quadVAO);
+    GLuint tempvbo;
+    glGenBuffers(1, &tempvbo);
+    glBindVertexArray(m_quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, tempvbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 24, &viewportQuad, GL_STATIC_DRAW);
+    setVA_PT2();
+    glBindVertexArray(0);
     return 0;
 }
 
@@ -132,8 +175,12 @@ void Game::update()
 
 void Game::render()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
+
     m_lightShader->activate();
     m_lightShader->setUniformMat4("view", m_camera.getView());
     m_lightShader->setUniformMat4("proj", m_camera.getProj());
@@ -150,10 +197,16 @@ void Game::render()
     }
 
     m_phongShader->activate();
-    // m_phongShader.setUniform3("lightColor", color);
     m_phongShader->setUniformMat4("view", m_camera.getView());
     m_phongShader->setUniformMat4("proj", m_camera.getProj());
     m_phongShader->setUniform3("camPos", m_camera.getPos());
+
+    glActiveTexture(GL_TEXTURE0);
+    m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
+    glActiveTexture(GL_TEXTURE1);
+    m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
+    m_phongShader->setUniform1("albedoMap", 0);
+    m_phongShader->setUniform1("shinenessMap", 1);
 
     // TODO: refactor this disgusting shit
     m_phongShader->setUniform3("pointLightList[0].pos", m_pointLights.at(0).pos);
@@ -165,7 +218,7 @@ void Game::render()
     m_phongShader->setUniform3("pointLightList[1].color", m_pointLights.at(1).color);
     m_phongShader->setUniform3("pointLightList[2].color", m_pointLights.at(2).color);
     m_phongShader->setUniform3("pointLightList[3].color", m_pointLights.at(3).color);
-    m_phongShader->setUniform3("pointLightList[4].color", m_pointLights.at(3).color);
+    m_phongShader->setUniform3("pointLightList[4].color", m_pointLights.at(4).color);
 
     m_phongShader->setUniform3("u_flashlight.pos", m_flashlight.pos);
     m_phongShader->setUniform3("u_flashlight.dir", m_flashlight.dir);
@@ -173,13 +226,23 @@ void Game::render()
 
     m_phongShader->setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
     m_phongShader->setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
-    // glBindVertexArray(0);
     for (auto &ob : m_objects)
     {
         m_phongShader->setUniformMat4("transform", ob.getTransform());
         m_phongShader->setUniformMat3("normalTransform", ob.getNormalTransform());
         ob.render();
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    m_postProcessShader->activate();
+    m_postProcessShader->setUniform1("screenTexture", 0);
+    glActiveTexture(GL_TEXTURE0);
+    frameBufferTex.bindToActiveUnit();
+    glBindVertexArray(m_quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     /* Swap front and back buffers */
     glfwSwapBuffers(m_window);
 }
@@ -202,6 +265,10 @@ void Game::framebufferResizeCallback(GLFWwindow *window, int width, int height)
     instance().m_windowWidth = width;
     instance().m_windowHeight = height;
     instance().m_camera.updateRatio(static_cast<float>(width), static_cast<float>(height));
+    instance().frameBufferTex.createEmpty(width, height);
+    // TODO: update size-dependent resources
+    glBindRenderbuffer(GL_RENDERBUFFER, instance().FBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
     glViewport(0, 0, width, height);
 }
 

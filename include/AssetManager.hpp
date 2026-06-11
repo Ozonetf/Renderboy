@@ -3,7 +3,7 @@
 #include "Mesh.h"
 #include "ShaderFile.hpp"
 #include "ShaderProgram.hpp"
-#include "texture.h"
+#include "Texture.hpp"
 #include <filesystem>
 #include <main.h>
 #include <string>
@@ -16,7 +16,7 @@ class AssetManager
   public:
     void     init();
     void     loadTextures();
-    texture &getTexture(std::string texName);
+    Texture &getTexture(std::string texName);
 
     void  loadMeshes();
     Mesh &getMesh(std::string meshName);
@@ -30,7 +30,7 @@ class AssetManager
 
   private:
     GLuint                                                 m_missingTexHandle;
-    std::unordered_map<std::string, texture>               m_textures;
+    std::unordered_map<std::string, Texture>               m_textures;
     std::unordered_map<std::string, Mesh>                  m_meshes;
     std::unordered_map<std::string, ShaderFile>            m_shaderFiles;
     std::unordered_map<std::string, ShaderProgram>         m_shaderPrograms;
