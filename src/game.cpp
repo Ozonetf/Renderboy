@@ -86,6 +86,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glEnable(GL_DEPTH_TEST);
     m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "PhongLighting.frag");
     m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
+    m_skyboxShader = m_assetManager.createShaderProgram("skybox", "skybox.vert", "skybox.frag");
 
     m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);
@@ -103,6 +104,18 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glBindBuffer(GL_ARRAY_BUFFER, tempvbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 24, &viewportQuad, GL_STATIC_DRAW);
     setVA_PT2();
+    glBindVertexArray(0);
+
+    m_cubemap.createCubeMap();
+    glGenVertexArrays(1, &this->skyboxVAO);
+    GLuint skyVBO;
+    glCreateBuffers(1, &skyVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     return 0;
 }
@@ -165,7 +178,7 @@ void Game::update()
     }
     for (auto &ob : m_objects)
     {
-        // ob.rotate(glm::vec3(0, 0, 1));
+        ob.rotate(glm::vec3(0, 0, 1));
         ob.updateTransform();
     }
     m_flashlight.pos = m_camera.getPos();
@@ -176,9 +189,23 @@ void Game::update()
 void Game::render()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    // since we're setting the pixel depth to 1 in the vert shader
+    // lequal is used instead of less in order to not discard visible skybox pixels
+    glDepthFunc(GL_LEQUAL);
+    m_skyboxShader->activate();
+    m_skyboxShader->setUniform1("skybox", 0);
+    m_skyboxShader->setUniformMat4("view", glm::mat4(glm::mat3(m_camera.getView())));
+    m_skyboxShader->setUniformMat4("projection", m_camera.getProj());
+    glBindVertexArray(skyboxVAO);
+    glActiveTexture(GL_TEXTURE0);
+    m_cubemap.bindToActiveUnit(GL_TEXTURE_CUBE_MAP);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthFunc(GL_LESS);
+
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
 
     m_lightShader->activate();

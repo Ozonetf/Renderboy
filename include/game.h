@@ -2,6 +2,7 @@
 #include "AssetManager.hpp"
 #include "GameObject.h"
 #include "ShaderProgram.hpp"
+#include "Texture.hpp"
 #include "camera.h"
 
 #include <GLFW/glfw3.h>
@@ -128,4 +129,7 @@ class Game
     GLuint         m_quadVAO;
     Texture        frameBufferTex;
     ShaderProgram *m_postProcessShader;
+    GLuint         skyboxVAO;
+    ShaderProgram *m_skyboxShader;
+    Texture        m_cubemap;
 };

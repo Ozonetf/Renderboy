@@ -26,8 +26,10 @@ void AssetManager::loadTextures()
     auto textureFolder = std::filesystem::path{"assets/textures"};
     for (const auto &texFile : std::filesystem::directory_iterator(textureFolder))
     {
+        if (texFile.is_directory())
+            continue;
         auto filename = texFile.path().filename();
-        std::cerr << std::format("loading {}\n", filename.string());
+        logToCerr("loading {}\n", filename.string());
         auto [iter, b] = m_textures.try_emplace(filename.stem().string());
         auto &[tname, tex] = *iter;
         // Create a generic string and conver to char, otherwise on windows c_str returns
