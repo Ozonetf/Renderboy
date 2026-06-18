@@ -1,5 +1,5 @@
 #pragma once
-#include "Geometry.h"
+#include "Geometry.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "main.h"

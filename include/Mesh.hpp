@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Geometry.h"
-#include "Material.h"
+#include "Geometry.hpp"
+#include "Material.hpp"
 #include <cstddef>
 #include <glad/glad.h>
 #include <glm/detail/qualifier.hpp>

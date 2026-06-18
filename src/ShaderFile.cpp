@@ -1,5 +1,5 @@
 #include "ShaderFile.hpp"
-#include "Helper.h"
+#include "Helper.hpp"
 #include "main.h"
 
 // Returns the shader object, compiles if havent been, caches

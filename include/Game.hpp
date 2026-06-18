@@ -1,9 +1,9 @@
 #pragma once
 #include "AssetManager.hpp"
-#include "GameObject.h"
+#include "Camera.hpp"
+#include "GameObject.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
-#include "camera.h"
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>

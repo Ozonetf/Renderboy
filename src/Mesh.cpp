@@ -1,6 +1,6 @@
-#include "Mesh.h"
-#include "Geometry.h"
-#include "Helper.h"
+#include "Mesh.hpp"
+#include "Geometry.hpp"
+#include "Helper.hpp"
 #include "ufbx.h"
 
 #include <cstddef>

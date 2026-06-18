@@ -1,6 +1,6 @@
 #include "main.h"
-#include "Helper.h"
-#include "game.h"
+#include "Game.hpp"
+#include "Helper.hpp"
 #include <format>
 #include <iostream>
 

@@ -1,6 +1,6 @@
-#include "game.h"
+#include "Game.hpp"
 #include "GLFW/glfw3.h"
-#include "Helper.h"
+#include "Helper.hpp"
 #include "main.h"
 
 #include <format>

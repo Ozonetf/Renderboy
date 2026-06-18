@@ -1,5 +1,5 @@
 #include "AssetManager.hpp"
-#include "Helper.h"
+#include "Helper.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <GL/gl.h>

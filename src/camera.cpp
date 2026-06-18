@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "Camera.hpp"
 #include <algorithm>
 #include <glm/ext/matrix_float4x4.hpp>
 

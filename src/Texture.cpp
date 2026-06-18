@@ -1,5 +1,5 @@
 #include "Texture.hpp"
-#include "Helper.h"
+#include "Helper.hpp"
 #include "main.h"
 #include <iostream>
 
