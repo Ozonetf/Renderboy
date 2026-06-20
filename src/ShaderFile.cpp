@@ -63,9 +63,9 @@ inline void ShaderFile::cleanup()
     this->handle = 0;
 }
 
-GLuint ShaderFile::reload(std::filesystem::file_time_type modTime)
+GLuint ShaderFile::reload(std::filesystem::file_time_type newTime)
 {
-    this->lastWriteTime = modTime;
+    this->cachedLastWrite = newTime;
     return compile();
     // for (const auto program : programRefs)
     // {

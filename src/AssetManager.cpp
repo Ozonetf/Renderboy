@@ -24,6 +24,7 @@ void AssetManager::init()
 void AssetManager::loadTextures()
 {
     auto textureFolder = std::filesystem::path{"assets/textures"};
+    logToCerr("======================= Loading Textures =======================\n");
     for (const auto &texFile : std::filesystem::directory_iterator(textureFolder))
     {
         if (texFile.is_directory())
@@ -41,8 +42,8 @@ void AssetManager::loadTextures()
             m_textures.erase(iter);
     }
 }
-
 Texture &AssetManager::getTexture(std::string texName)
+
 {
     auto tex = m_textures.find(texName);
     if (tex != m_textures.end())
@@ -59,6 +60,7 @@ Texture &AssetManager::getTexture(std::string texName)
 void AssetManager::loadMeshes()
 {
     auto meshFolder = std::filesystem::path{"assets/mesh"};
+    logToCerr("======================= Loading Meshes =======================\n");
     for (const auto &fbxFile : std::filesystem::directory_iterator(meshFolder))
     {
         auto lswt = std::filesystem::last_write_time(fbxFile);
@@ -81,6 +83,7 @@ Mesh &AssetManager::getMesh(std::string meshName)
 void AssetManager::loadShaderFiles()
 {
     const auto shaderFolder = std::filesystem::path{"assets/shaders"};
+    logToCerr("======================= Loading Shader Files =======================\n");
     for (const auto &dirEntry : std::filesystem::directory_iterator(shaderFolder))
     {
         auto shaderFileName = dirEntry.path().filename();
@@ -89,7 +92,7 @@ void AssetManager::loadShaderFiles()
             continue;
         auto [ele, b] = m_shaderFiles.try_emplace(shaderFileName.string(), dirEntry);
         logToCerr("loading {}\n", shaderFileName.string());
-        ele->second.init(dirEntry, fileType);
+        ele->second.init(fileType);
     }
 }
 
@@ -118,9 +121,9 @@ void AssetManager::updateShaders()
     const auto  shaderFolder = std::filesystem::path{"assets/shaders"};
     for (auto &iter : m_shaderFiles)
     {
-        auto shaderFile = iter.second;
-        auto newTime = std::filesystem::last_write_time(shaderFile.getdir());
-        auto oldTime = shaderFile.lastWrite();
+        auto &shaderFile = iter.second;
+        auto  newTime = shaderFile.m_dirEntry.last_write_time();
+        auto  oldTime = shaderFile.getCachedWriteTime();
         // If shader file modified, recompile the object, then add all referencing program to list to relink
         if (oldTime != newTime)
         {

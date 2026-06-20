@@ -27,25 +27,24 @@ inline std::string stStr(ShaderType T)
 
 class ShaderFile
 {
-    bool                            modified = false;
     GLuint                          handle = 0;
     ShaderType                      type = none;
-    std::filesystem::file_time_type lastWriteTime{};
+    std::filesystem::file_time_type cachedLastWrite{};
 
   public:
     ShaderFile() = delete;
     ShaderFile(std::filesystem::directory_entry ent) : m_dirEntry(ent) {};
 
-    inline void init(std::filesystem::directory_entry file, ShaderType type)
+    inline void init(ShaderType type)
     {
-        this->lastWriteTime = file.last_write_time();
+        this->cachedLastWrite = m_dirEntry.last_write_time();
         this->type = type;
     }
 
     GLuint      requestHandle();
     GLuint      compile();
-    GLuint      reload(std::filesystem::file_time_type modTime);
-    inline auto lastWrite() const { return this->lastWriteTime; };
+    GLuint      reload(std::filesystem::file_time_type newTime);
+    inline auto getCachedWriteTime() const { return this->cachedLastWrite; };
     inline void cleanup();
 
     std::filesystem::directory_entry getdir() const { return this->m_dirEntry; };

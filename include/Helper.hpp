@@ -45,3 +45,11 @@ inline std::string fileTimeToString(const std::filesystem::file_time_type &ftime
     str.pop_back(); // rm the trailing '\n' put by `asctime`
     return str;
 }
+
+inline std::string fileTimeStr(const std::filesystem::file_time_type &ftime)
+{
+    std::time_t cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+    std::string str = std::asctime(std::localtime(&cftime));
+    str.pop_back(); // rm the trailing '\n' put by `asctime`
+    return str;
+}
