@@ -1,5 +1,9 @@
 ## A simple, cross-platform 3D renderer/engine with OpenGL
 Simple 3D engine with OpenGL using [GLFW](https://www.glfw.org/) and [glad](https://github.com/dav1dde/glad), and other helper libraries such as [STB's image loader](https://github.com/nothings/stb).
+
+[![Linux](https://img.shields.io/github/actions/workflow/status/Ozonetf/Renderboy/ci.yml?job=Build+on+ubuntu-latest&label=Linux)](https://github.com/Ozonetf/Renderboy/actions/workflows/ci.yml)
+[![Windows](https://img.shields.io/github/actions/workflow/status/Ozonetf/Renderboy/ci.yml?job=Build+on+windows-latest&label=Windows)](https://github.com/Ozonetf/Renderboy/actions/workflows/ci.yml)
+[![macOS](https://img.shields.io/github/actions/workflow/status/Ozonetf/Renderboy/ci.yml?job=Build+on+macos-latest&label=macOS)](https://github.com/Ozonetf/Renderboy/actions/workflows/ci.yml)
 ## Developer Quick Start
 ```
 git clone --recursive https://github.com/Ozonetf/Renderboy.git
