@@ -1,6 +1,7 @@
 // A collection of useful helper functions
 #pragma once
 
+#include <chrono>
 #include <filesystem>
 #include <format>
 #include <glm/vec2.hpp>
@@ -40,7 +41,8 @@ inline glm::vec2 toGLM(ufbx_vec2 _v) { return glm::vec2(static_cast<float>(_v.x)
 
 inline std::string fileTimeToString(const std::filesystem::file_time_type &ftime)
 {
-    std::time_t cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+    std::time_t cftime =
+        std::chrono::system_clock::to_time_t(std::chrono::clock_cast<std::chrono::system_clock>(ftime));
     std::string str = std::asctime(std::localtime(&cftime));
     str.pop_back(); // rm the trailing '\n' put by `asctime`
     return str;
@@ -48,7 +50,8 @@ inline std::string fileTimeToString(const std::filesystem::file_time_type &ftime
 
 inline std::string fileTimeStr(const std::filesystem::file_time_type &ftime)
 {
-    std::time_t cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+    std::time_t cftime =
+        std::chrono::system_clock::to_time_t(std::chrono::clock_cast<std::chrono::system_clock>(ftime));
     std::string str = std::asctime(std::localtime(&cftime));
     str.pop_back(); // rm the trailing '\n' put by `asctime`
     return str;
