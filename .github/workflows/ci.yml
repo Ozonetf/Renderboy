@@ -53,6 +53,8 @@ jobs:
       # clone repository onto the runner
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # instal glfw dependencies on linux (Debian)
       - name: Install dependencies (Linux)
