@@ -24,27 +24,28 @@ on:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
+    name: ${{ matrix.os }}
 
     # The runner OS comes from the matrix (defined below)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false     # don't cancel other jobs if one fails
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # os: [ubuntu-latest, windows-latest, macos-latest]
         # build: [Release, Debug]
-
-        # Attach compiler variables to each OS entry
         include:
           - os: ubuntu-latest
+            name: Build on Linux
             c_compiler: gcc
             cpp_compiler: g++
-
-          # - os: windows-latest
-          #   c_compiler: cl
-          #   cpp_compiler: cl
-
+      
+          - os: windows-latest
+            name: Build on Windows
+            c_compiler: cl
+            cpp_compiler: cl
+      
           - os: macos-latest
+            name: Build on macOS
             c_compiler: clang
             cpp_compiler: clang++
 
