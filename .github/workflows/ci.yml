@@ -1,0 +1,74 @@
+
+name: my CI Build
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'assets/**'
+  pull_request:
+    branches: [ main, master ]
+        paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'assets/**'
+  workflow_dispatch:       # allows manually triggering from the GitHub UI
+      paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'assets/**'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+
+    # The runner OS comes from the matrix (defined below)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false     # don't cancel other jobs if one fails
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # build: [Release, Debug]
+
+        # Attach compiler variables to each OS entry
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+
+          # - os: windows-latest
+          #   c_compiler: cl
+          #   cpp_compiler: cl
+
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+
+    # sequential steps that runs in each job
+    steps:
+
+      # clone repository onto the runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # instal glfw dependencies on linux (Debian)
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwayland-dev libxkbcommon-dev xorg-dev
+
+      # Configure the build with CMake      
+      #    -DCMAKE_BUILD_TYPE : Release / Debug / RelWithDebInfo / MinSizeRel
+      - name: Configure CMake
+        run: cmake -B build
+        # - name: Configure CMake
+        # run: >
+        #   cmake -B build
+        #   -DCMAKE_BUILD_TYPE=Release
+        #   -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        #   -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+
+      # Build the project
+      - name: Build
+        run: cmake --build build --parallel
