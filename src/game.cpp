@@ -70,6 +70,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
         ob.translate(glm::vec3(randomFloat(-15, 15), randomFloat(-15, 15), randomFloat(-15, 15)));
         ob.scale(glm::vec3(1));
         ob.m_mesh = &m_assetManager.getMesh("backpack");
+        ob.updateTransform();
         m_objects.push_back(ob);
     }
     m_lightMesh.m_mesh = &m_assetManager.getMesh("sphere2");
@@ -84,7 +85,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "PhongLighting.frag");
+    m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "env_mapping.frag");
     m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
     m_skyboxShader = m_assetManager.createShaderProgram("skybox", "skybox.vert", "skybox.frag");
 
@@ -92,8 +93,9 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glActiveTexture(GL_TEXTURE1);
     m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
 
-    m_phongShader->setUniform1("albedoMap", 0);
-    m_phongShader->setUniform1("shinenessMap", 1);
+    m_phongShader->setUniform1("skybox", 0);
+    // m_phongShader->setUniform1("albedoMap", 0);
+    // m_phongShader->setUniform1("shinenessMap", 1);
     m_postProcessShader = m_assetManager.createShaderProgram("postProcess", "post_process.vert", "post_process.frag");
 
     tempFrameBufferSetUp();
@@ -176,11 +178,11 @@ void Game::update()
         // light.color = glm::vec3(1);
         // light._color = glm::mix(light._pos, -light._pos, sinvar);
     }
-    for (auto &ob : m_objects)
-    {
-        ob.rotate(glm::vec3(0, 0, 1));
-        ob.updateTransform();
-    }
+    // for (auto &ob : m_objects)
+    // {
+    //     ob.rotate(glm::vec3(0, 0, 1));
+    //     ob.updateTransform();
+    // }
     m_flashlight.pos = m_camera.getPos();
     m_flashlight.dir = m_camera.getFront();
     m_flashlight.color = m_flashlight.on ? glm::vec3(1) : glm::vec3(0);
@@ -232,27 +234,25 @@ void Game::render()
     m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);
     m_assetManager.getTexture("backpack_roughness").bindToActiveUnit();
-    m_phongShader->setUniform1("albedoMap", 0);
-    m_phongShader->setUniform1("shinenessMap", 1);
 
     // TODO: refactor this disgusting shit
-    m_phongShader->setUniform3("pointLightList[0].pos", m_pointLights.at(0).pos);
-    m_phongShader->setUniform3("pointLightList[1].pos", m_pointLights.at(1).pos);
-    m_phongShader->setUniform3("pointLightList[2].pos", m_pointLights.at(2).pos);
-    m_phongShader->setUniform3("pointLightList[3].pos", m_pointLights.at(3).pos);
-    m_phongShader->setUniform3("pointLightList[4].pos", m_pointLights.at(4).pos);
-    m_phongShader->setUniform3("pointLightList[0].color", m_pointLights.at(0).color);
-    m_phongShader->setUniform3("pointLightList[1].color", m_pointLights.at(1).color);
-    m_phongShader->setUniform3("pointLightList[2].color", m_pointLights.at(2).color);
-    m_phongShader->setUniform3("pointLightList[3].color", m_pointLights.at(3).color);
-    m_phongShader->setUniform3("pointLightList[4].color", m_pointLights.at(4).color);
-
-    m_phongShader->setUniform3("u_flashlight.pos", m_flashlight.pos);
-    m_phongShader->setUniform3("u_flashlight.dir", m_flashlight.dir);
-    m_phongShader->setUniform1("u_flashlight.intensity", m_flashlight.on ? 1.0f : 0.0f);
-
-    m_phongShader->setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
-    m_phongShader->setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
+    // m_phongShader->setUniform3("pointLightList[0].pos", m_pointLights.at(0).pos);
+    // m_phongShader->setUniform3("pointLightList[1].pos", m_pointLights.at(1).pos);
+    // m_phongShader->setUniform3("pointLightList[2].pos", m_pointLights.at(2).pos);
+    // m_phongShader->setUniform3("pointLightList[3].pos", m_pointLights.at(3).pos);
+    // m_phongShader->setUniform3("pointLightList[4].pos", m_pointLights.at(4).pos);
+    // m_phongShader->setUniform3("pointLightList[0].color", m_pointLights.at(0).color);
+    // m_phongShader->setUniform3("pointLightList[1].color", m_pointLights.at(1).color);
+    // m_phongShader->setUniform3("pointLightList[2].color", m_pointLights.at(2).color);
+    // m_phongShader->setUniform3("pointLightList[3].color", m_pointLights.at(3).color);
+    // m_phongShader->setUniform3("pointLightList[4].color", m_pointLights.at(4).color);
+    //
+    // m_phongShader->setUniform3("u_flashlight.pos", m_flashlight.pos);
+    // m_phongShader->setUniform3("u_flashlight.dir", m_flashlight.dir);
+    // m_phongShader->setUniform1("u_flashlight.intensity", m_flashlight.on ? 1.0f : 0.0f);
+    //
+    // m_phongShader->setUniform1("u_flashlight.outerCutOff", m_flashlight.outerCutOff());
+    // m_phongShader->setUniform1("u_flashlight.innerCutOff", m_flashlight.innerCutOff());
     for (auto &ob : m_objects)
     {
         m_phongShader->setUniformMat4("transform", ob.getTransform());

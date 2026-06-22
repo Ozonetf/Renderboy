@@ -50,8 +50,8 @@ inline std::string fileTimeToString(const std::filesystem::file_time_type &ftime
 
 inline std::string fileTimeStr(const std::filesystem::file_time_type &ftime)
 {
-    std::time_t cftime =
-        std::chrono::system_clock::to_time_t(std::chrono::clock_cast<std::chrono::system_clock>(ftime));
+    auto        sys_time = std::chrono::system_clock::now() + (ftime - std::filesystem::file_time_type::clock::now());
+    auto        cftime = std::chrono::system_clock::to_time_t(sys_time);
     std::string str = std::asctime(std::localtime(&cftime));
     str.pop_back(); // rm the trailing '\n' put by `asctime`
     return str;

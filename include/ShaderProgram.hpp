@@ -1,5 +1,6 @@
 #pragma once
 #include "Geometry.hpp"
+#include "Helper.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "main.h"
@@ -16,8 +17,8 @@ class ShaderProgram
     {
         auto ret = glGetUniformLocation(m_handle, name);
         // assert(ret != -1 && "INVALID UNIFORM NAME");
-        // if (ret == -1)
-        // std::cerr << std::format("SHADER ERROR::INVALID UNIFORM NAME: \"{}\"\n", name);
+        if (ret == -1)
+            logToCerr("SHADER ERROR::INVALID UNIFORM NAME: \"{}\"\n", name);
         return ret;
     }
 

@@ -55,7 +55,7 @@ To be tested..
 * [x] Mouse+Keyboard Camera Control 
 * [x] Phong Lighting model
 * [x] Texture import
-* [ ] Hot swapping shader(recompile and activate in runtime)
+* [x] Hot swapping shader(recompile and activate in runtime)
 * [ ] PBR
 * [x] FBX and OBj mesh import
 * [ ] Full FBX scene import(light, animation, material etc.)

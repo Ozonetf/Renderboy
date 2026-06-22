@@ -19,6 +19,8 @@ void Mesh::init()
 
 // loads mesh from FBX file, generate normals if missing or otherwised specified
 // with ufbx_load_opts, combines all mesh parts into 1 mesh.
+// This function bakes the position and normal data of all meshes a fbx contains
+// with respect to their original local transform.
 void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
 {
     // auto opts = ufbx_load_opts{.generate_missing_normals = true};
@@ -64,12 +66,17 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
             for (size_t i = 0; i < triCount * 3; ++i)
             {
                 uint32_t vertIndex = triIndices[i];
+
+                auto nodeWorldPos = &node->node_to_world;
+                auto vertPos = ufbx_transform_position(nodeWorldPos, mesh->vertex_position[vertIndex]);
+                // to bake the normal use normalize(inverse(transpose(m)))
+                auto normTransform = ufbx_matrix_for_normals(&node->node_to_world);
+                auto vertNorm =
+                    ufbx_vec3_normalize(ufbx_transform_direction(&normTransform, mesh->vertex_normal[vertIndex]));
+
                 // bake position with respect to nodes world transform
-                // TODO: update normal too
                 vertices.push_back(
-                    {.pos = toGLM(ufbx_transform_position(&node->node_to_world, mesh->vertex_position[vertIndex])),
-                     .normal = toGLM(mesh->vertex_normal[vertIndex]),
-                     .texCoord = toGLM(mesh->vertex_uv[vertIndex])});
+                    {.pos = toGLM(vertPos), .normal = toGLM(vertNorm), .texCoord = toGLM(mesh->vertex_uv[vertIndex])});
                 ++generatedVert;
             }
         }
