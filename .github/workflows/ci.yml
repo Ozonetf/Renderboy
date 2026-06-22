@@ -7,6 +7,7 @@ on:
       - '**.md'
       - '.gitignore'
       - 'assets/**'
+      - '.github/**'
 
   pull_request:
     branches: [ main, master ]
@@ -52,9 +53,16 @@ jobs:
 
       # clone repository onto the runner
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
+      - name: Cache build directory
+        uses: actions/cache@v5
+        with:
+          path: build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
       # instal glfw dependencies on linux (Debian)
       - name: Install dependencies (Linux)
