@@ -1,4 +1,3 @@
-
 name: my CI Build
 
 on:
@@ -8,12 +7,14 @@ on:
       - '**.md'
       - '.gitignore'
       - 'assets/**'
+
   pull_request:
     branches: [ main, master ]
-        paths-ignore:
+    paths-ignore:
       - '**.md'
       - '.gitignore'
       - 'assets/**'
+
   workflow_dispatch:       # allows manually triggering from the GitHub UI
       paths-ignore:
       - '**.md'
