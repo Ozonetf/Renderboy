@@ -39,11 +39,11 @@ inline glm::vec3 toGLM(ufbx_vec3 _v)
 
 inline glm::vec2 toGLM(ufbx_vec2 _v) { return glm::vec2(static_cast<float>(_v.x), static_cast<float>(_v.y)); }
 
-inline std::string fileTimeStr(const std::filesystem::file_time_type &ftime)
-{
-    auto        sys_time = std::chrono::system_clock::now() + (ftime - std::filesystem::file_time_type::clock::now());
-    auto        cftime = std::chrono::system_clock::to_time_t(sys_time);
-    std::string str = std::asctime(std::localtime(&cftime));
-    str.pop_back(); // rm the trailing '\n' put by `asctime`
-    return str;
-}
+// inline std::string fileTimeStr(const std::filesystem::file_time_type &ftime)
+// {
+//     auto        sys_time = std::chrono::system_clock::now() + (ftime -
+//     std::filesystem::file_time_type::clock::now()); auto        cftime =
+//     std::chrono::system_clock::to_time_t(sys_time); std::string str = std::asctime(std::localtime(&cftime));
+//     str.pop_back(); // rm the trailing '\n' put by `asctime`
+//     return str;
+// }
