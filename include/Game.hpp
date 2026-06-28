@@ -132,4 +132,5 @@ class Game
     GLuint         skyboxVAO;
     ShaderProgram *m_skyboxShader;
     Texture        m_cubemap;
+    GLuint         UBOcamera;
 };

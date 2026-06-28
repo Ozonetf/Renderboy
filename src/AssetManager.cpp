@@ -2,7 +2,6 @@
 #include "Helper.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <GL/gl.h>
 #include <filesystem>
 #include <format>
 #include <stb_image.h>

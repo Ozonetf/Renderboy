@@ -1,8 +1,6 @@
 // A collection of useful helper functions
 #pragma once
 
-#include <chrono>
-#include <filesystem>
 #include <format>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

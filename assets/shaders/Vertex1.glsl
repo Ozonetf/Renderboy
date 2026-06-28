@@ -1,12 +1,16 @@
-#version 330 core
+#version 430 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aColor;
 layout(location = 2) in vec2 aTCoord;
 
+layout(std140, binding = 0) uniform u_camera
+{
+    mat4 proj;
+    mat4 view;
+    vec3 cam_pos;
+};
 uniform float myfloat;
 uniform mat4 transform;
-uniform mat4 proj;
-uniform mat4 view;
 
 out vec3 outColor;
 out vec2 texCoord;

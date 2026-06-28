@@ -1,6 +1,7 @@
 #include "Texture.hpp"
 #include "Helper.hpp"
 #include "main.h"
+#include <filesystem>
 #include <iostream>
 
 bool Texture::createFromFile(const char *file, bool createMip)

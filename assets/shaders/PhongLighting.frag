@@ -18,9 +18,15 @@ in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoord;
 
+layout(std140, binding = 0) uniform u_camera
+{
+    mat4 proj;
+    mat4 view;
+    vec3 cam_pos;
+};
 uniform PointLight pointLightList[N_POINT_LIGHTS];
 uniform SpotLight u_flashlight;
-uniform vec3 camPos;
+// uniform vec3 camPos;
 uniform sampler2D albedoMap;
 uniform sampler2D shinenessMap;
 
@@ -64,7 +70,7 @@ void main()
 {
     vec3 finalColor = vec3(0);
     vec3 norm = normalize(normal);
-    vec3 viewDir = normalize(camPos - fragPos);
+    vec3 viewDir = normalize(cam_pos - fragPos);
     for (int i = 0; i < N_POINT_LIGHTS; ++i)
         finalColor += calculatePointLight(pointLightList[i], fragPos, norm, viewDir);
 

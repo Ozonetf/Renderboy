@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "GLFW/glfw3.h"
 #include "Helper.hpp"
+#include "UBO.hpp"
 #include "main.h"
 
 #include <format>
@@ -119,6 +120,12 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    glCreateBuffers(1, &UBOcamera);
+    glNamedBufferStorage(UBOcamera, sizeof(UBO::Camera), nullptr, GL_DYNAMIC_STORAGE_BIT);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBOcamera);
+    glNamedBufferSubData(UBOcamera, offsetof(UBO::Camera, proj), sizeof(decltype(UBO::Camera::proj)),
+                         glm::value_ptr(m_camera.getProj()));
     return 0;
 }
 
@@ -198,10 +205,15 @@ void Game::render()
     // since we're setting the pixel depth to 1 in the vert shader
     // lequal is used instead of less in order to not discard visible skybox pixels
     glDepthFunc(GL_LEQUAL);
+
+    // ubdate camera UBO
+    glNamedBufferSubData(UBOcamera, offsetof(UBO::Camera, view), sizeof(decltype(UBO::Camera::view)),
+                         glm::value_ptr(m_camera.getView()));
+    glNamedBufferSubData(UBOcamera, offsetof(UBO::Camera, pos), sizeof(decltype(UBO::Camera::pos)),
+                         glm::value_ptr(m_camera.getPos()));
     m_skyboxShader->activate();
     m_skyboxShader->setUniform1("skybox", 0);
-    m_skyboxShader->setUniformMat4("view", glm::mat4(glm::mat3(m_camera.getView())));
-    m_skyboxShader->setUniformMat4("projection", m_camera.getProj());
+    m_skyboxShader->setUniformMat4("skyboxViewMat", glm::mat4(glm::mat3(m_camera.getView())));
     glBindVertexArray(skyboxVAO);
     glActiveTexture(GL_TEXTURE0);
     m_cubemap.bindToActiveUnit(GL_TEXTURE_CUBE_MAP);
@@ -211,8 +223,6 @@ void Game::render()
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
 
     m_lightShader->activate();
-    m_lightShader->setUniformMat4("view", m_camera.getView());
-    m_lightShader->setUniformMat4("proj", m_camera.getProj());
 
     // render each light with a simple mesh using m_lightMesh
     for (const auto &pointLight : m_pointLights)
@@ -226,8 +236,6 @@ void Game::render()
     }
 
     m_phongShader->activate();
-    m_phongShader->setUniformMat4("view", m_camera.getView());
-    m_phongShader->setUniformMat4("proj", m_camera.getProj());
     m_phongShader->setUniform3("camPos", m_camera.getPos());
 
     glActiveTexture(GL_TEXTURE0);
@@ -296,6 +304,8 @@ void Game::framebufferResizeCallback(GLFWwindow *window, int width, int height)
     // TODO: update size-dependent resources
     glBindRenderbuffer(GL_RENDERBUFFER, instance().FBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glNamedBufferSubData(instance().UBOcamera, offsetof(UBO::Camera, proj), sizeof(decltype(UBO::Camera::proj)),
+                         glm::value_ptr(instance().getCamera().getProj()));
     glViewport(0, 0, width, height);
 }
 
