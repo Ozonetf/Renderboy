@@ -87,45 +87,45 @@ inline void ShaderProgram::reload(GLuint program)
 // sets a 4x4 matrix uniform in the shader by name
 inline void ShaderProgram::setUniformMat4(const char *uName, const glm::mat4 &mat)
 {
-    glUniformMatrix4fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
+    glProgramUniformMatrix4fv(m_handle, glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 // sets a 4x4 matrix uniform in the shader by name
 inline void ShaderProgram::setUniformMat3(const char *uName, const glm::mat3 &mat)
 {
-    glUniformMatrix3fv(glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
+    glProgramUniformMatrix3fv(m_handle, glGetUniformLocationSafe(uName), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 template <>
 inline void ShaderProgram::setUniform1<int>(const char *uName, int in)
 {
-    glUniform1i(glGetUniformLocationSafe(uName), in);
+    glProgramUniform1i(m_handle, glGetUniformLocationSafe(uName), in);
 }
 template <>
 inline void ShaderProgram::setUniform1<unsigned int>(const char *uName, unsigned int in)
 {
-    glUniform1ui(glGetUniformLocationSafe(uName), in);
+    glProgramUniform1ui(m_handle, glGetUniformLocationSafe(uName), in);
 }
 template <>
 inline void ShaderProgram::setUniform1<float>(const char *uName, float in)
 {
-    glUniform1f(glGetUniformLocationSafe(uName), in);
+    glProgramUniform1f(m_handle, glGetUniformLocationSafe(uName), in);
 }
 template <>
 inline void ShaderProgram::setUniform1<double>(const char *uName, double in)
 {
-    glUniform1d(glGetUniformLocationSafe(uName), in);
+    glProgramUniform1d(m_handle, glGetUniformLocationSafe(uName), in);
 }
 
 template <>
 inline void ShaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in)
 {
-    glUniform3fv(glGetUniformLocationSafe(uName), 1, value_ptr(in));
+    glProgramUniform3fv(m_handle, glGetUniformLocationSafe(uName), 1, value_ptr(in));
 }
 
 template <>
 inline void ShaderProgram::setUniform3<vec<3, float, defaultp>>(const char *uName, vec<3, float, defaultp> in,
                                                                 size_t count)
 {
-    glUniform3fv(glGetUniformLocationSafe(uName), count, value_ptr(in));
+    glProgramUniform3fv(m_handle, glGetUniformLocationSafe(uName), count, value_ptr(in));
 }
