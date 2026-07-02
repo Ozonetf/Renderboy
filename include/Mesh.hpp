@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Geometry.hpp"
 #include "Material.hpp"
+#include "Vertex.hpp"
 #include <cstddef>
 #include <glad/glad.h>
 #include <glm/detail/qualifier.hpp>

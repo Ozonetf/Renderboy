@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
-#include "Geometry.hpp"
 #include "Helper.hpp"
+#include "Vertex.hpp"
 #include "ufbx.h"
 
 #include <cstddef>

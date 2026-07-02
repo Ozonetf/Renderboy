@@ -1,6 +1,6 @@
 #pragma once
-#include "Geometry.hpp"
 #include "Helper.hpp"
+#include "Vertex.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "main.h"
