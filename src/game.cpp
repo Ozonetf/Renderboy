@@ -236,7 +236,6 @@ void Game::render()
     }
 
     m_phongShader->activate();
-    m_phongShader->setUniform3("camPos", m_camera.getPos());
 
     glActiveTexture(GL_TEXTURE0);
     m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();

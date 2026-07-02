@@ -12,9 +12,9 @@
 
 void Mesh::init()
 {
-    glGenBuffers(1, &m_EBOhandle);
-    glGenBuffers(1, &m_VBOhandle);
-    glGenVertexArrays(1, &m_VAOhandle);
+    glCreateBuffers(1, &m_EBOhandle);
+    glCreateBuffers(1, &m_VBOhandle);
+    glCreateVertexArrays(1, &m_VAOhandle);
 }
 
 // loads mesh from FBX file, generate normals if missing or otherwised specified
@@ -31,18 +31,43 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
         std::cerr << err.description.data;
         return;
     }
-    std::cerr << std::format("mesh count: {}, material count: {}, \n", scene->meshes.count, scene->materials.count);
+    logToCerr("mesh count: {}, material count: {}, \n", scene->meshes.count, scene->materials.count);
     if (scene->meshes[0]->generated_normals)
         std::cerr << "Generated normal\n";
 
+    auto mesh = scene->meshes[0];
+    if (mesh->vertex_position.exists && mesh->vertex_normal.exists && mesh->vertex_uv.exists)
+    {
+        makeMesh<VertexType::PosNormalTex>(*scene);
+    }
+    else
+    {
+        logToCerr("pos: {} UV: {} Norm: {} color: {}\n", mesh->vertex_position.exists, mesh->vertex_uv.exists,
+                  mesh->vertex_normal.exists, mesh->vertex_color.exists);
+        assert(false && "vertex type not implemented");
+    }
+    logToCerr("loaded {}, vert count: {} ind count: {}\n", fileName, m_meshDesc.uniqueVertexCount,
+              m_meshDesc.indexCount);
+}
+
+void Mesh::render()
+{
+    glBindVertexArray(m_VAOhandle);
+    glDrawElements(GL_TRIANGLES, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+
+template <VertexType::GLVertex V>
+void Mesh::makeMesh(ufbx_scene &scene)
+{
     size_t maxModelVertexCount = 0;
     size_t maxModelFaceTri = 0;
-    for (const auto &meshPart : scene->meshes)
+    for (const auto &meshPart : scene.meshes)
     {
         maxModelVertexCount += (meshPart->max_face_triangles * meshPart->faces.count);
         maxModelFaceTri = std::max(maxModelFaceTri, meshPart->max_face_triangles);
     }
-    std::vector<SimpleVertex> vertices;
+    std::vector<V> vertices;
     vertices.reserve(maxModelVertexCount);
     // the indices of the mesh after triangulation on each faces
     // Safe way to guarantee indicie array size will be no smaller
@@ -50,7 +75,7 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
     // NB need resize here since triIndices.size() is needed late
     std::vector<uint32_t> triIndices(maxModelFaceTri * 3);
 
-    for (const auto &node : scene->nodes)
+    for (const auto &node : scene.nodes)
     {
         const auto &mesh = node->mesh;
         if (!mesh)
@@ -67,16 +92,24 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
             {
                 uint32_t vertIndex = triIndices[i];
 
-                auto nodeWorldPos = &node->node_to_world;
-                auto vertPos = ufbx_transform_position(nodeWorldPos, mesh->vertex_position[vertIndex]);
-                // to bake the normal use normalize(inverse(transpose(m)))
-                auto normTransform = ufbx_matrix_for_normals(&node->node_to_world);
-                auto vertNorm =
-                    ufbx_vec3_normalize(ufbx_transform_direction(&normTransform, mesh->vertex_normal[vertIndex]));
-
-                // bake position with respect to nodes world transform
-                vertices.push_back(
-                    {.pos = toGLM(vertPos), .normal = toGLM(vertNorm), .texCoord = toGLM(mesh->vertex_uv[vertIndex])});
+                V vertex;
+                if constexpr (VertexType::HasPos3<V>)
+                {
+                    auto nodeWorldPos = &node->node_to_world;
+                    vertex.pos = toGLM(ufbx_transform_position(nodeWorldPos, mesh->vertex_position[vertIndex]));
+                }
+                if constexpr (VertexType::HasNormal<V>)
+                {
+                    // to bake the normal use normalize(inverse(transpose(m)))
+                    auto normTransform = ufbx_matrix_for_normals(&node->node_to_world);
+                    vertex.normal = toGLM(
+                        ufbx_vec3_normalize(ufbx_transform_direction(&normTransform, mesh->vertex_normal[vertIndex])));
+                }
+                if constexpr (VertexType::HasTexCoord<V>)
+                {
+                    vertex.texCoord = toGLM(mesh->vertex_uv[vertIndex]);
+                }
+                vertices.push_back(vertex);
                 ++generatedVert;
             }
         }
@@ -87,8 +120,8 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
     }
     vertices.shrink_to_fit();
     m_meshDesc.indexCount = vertices.size();
-    auto vertStream = ufbx_vertex_stream{
-        .data = vertices.data(), .vertex_count = vertices.size(), .vertex_size = sizeof(SimpleVertex)};
+    auto vertStream =
+        ufbx_vertex_stream{.data = vertices.data(), .vertex_count = vertices.size(), .vertex_size = sizeof(V)};
 
     auto indices = std::vector<uint32_t>(m_meshDesc.indexCount, 0);
 
@@ -96,29 +129,11 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
     m_meshDesc.uniqueVertexCount +=
         ufbx_generate_indices(&vertStream, 1, indices.data(), indices.size(), nullptr, nullptr);
     vertices.resize(m_meshDesc.uniqueVertexCount);
-    std::cerr << std::format("loaded {}, vert count: {} ind count: {}\n", fileName, m_meshDesc.uniqueVertexCount,
-                             m_meshDesc.indexCount);
-    bindBuffer(vertices, indices);
-}
 
-void Mesh::render()
-{
-    glBindVertexArray(m_VAOhandle);
-    glDrawElements(GL_TRIANGLES, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
-
-void Mesh::bindBuffer(const std::vector<SimpleVertex> vertices, const std::vector<uint32_t> indices)
-{
     assert(m_VAOhandle != 0 && m_VBOhandle != 0 && m_EBOhandle != 0);
-    glBindVertexArray(m_VAOhandle);
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBOhandle);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(SimpleVertex), vertices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBOhandle);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
-
-    setSimpleVertexAttrib();
-    // unbind array object when done
-    glBindVertexArray(0);
+    glNamedBufferStorage(m_VBOhandle, sizeof(V) * vertices.size(), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(m_EBOhandle, sizeof(uint32_t) * indices.size(), indices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glVertexArrayVertexBuffer(m_VAOhandle, 0, m_VBOhandle, 0, sizeof(V));
+    glVertexArrayElementBuffer(m_VAOhandle, m_EBOhandle);
+    V::setVertexAttribute(m_VAOhandle);
 }

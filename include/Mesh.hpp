@@ -8,7 +8,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <ufbx.h>
-#include <vector>
 
 struct MeshDesc
 {
@@ -27,14 +26,12 @@ class Mesh
                                                         .target_unit_meters = 1.0f});
     void render();
 
-    inline GLuint   getVBO() const { return m_VBOhandle; };
-    inline GLuint   getEBO() const { return m_EBOhandle; };
-    inline GLuint   getVAO() const { return m_VAOhandle; };
+    template <VertexType::GLVertex V>
+    void makeMesh(ufbx_scene &scene);
+
     inline MeshDesc getDesc() const { return m_meshDesc; };
 
   private:
-    void bindBuffer(const std::vector<SimpleVertex> vertices, const std::vector<uint32_t> indices);
-
     GLuint   m_VBOhandle{};
     GLuint   m_EBOhandle{};
     GLuint   m_VAOhandle{};

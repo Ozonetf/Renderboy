@@ -1,47 +1,84 @@
 #pragma once
 
+#include <concepts>
 #include <cstddef>
-#include <cstdint>
 #include <glad/glad.h>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 using namespace glm;
-namespace VERTEX_ATTRIBUTE
+enum class Vertex_Attribute : GLuint
 {
-// bitmask for which attributes a vertex contains, corresponds to
-// layout location in vertex shaders. e.g. position layout = 1
-enum class VABitmask : uint16_t
-{
-    POSITION = 1 << 0,
-    NORMAL = 1 << 1,
-    TEXCOORD = 1 << 2,
-    VERTEXCOLOR = 1 << 3,
-    POSITION2D = 1 << 4,
+    POSITION = 0,
+    COLOR = 1,
+    UV = 2,
+    NORMAL = 3,
+    POSITION2D = 4,
 };
-} // namespace VERTEX_ATTRIBUTE
+using loc_of = std::underlying_type_t<Vertex_Attribute>;
 
-struct SimpleVertex
+inline void vertexAttributeFormat(GLuint VAO, Vertex_Attribute atrb, GLuint offset, GLuint size, GLuint type = GL_FLOAT,
+                                  GLuint normalize = GL_FALSE)
+{
+    glEnableVertexArrayAttrib(VAO, loc_of(atrb));
+    glVertexArrayAttribFormat(VAO, loc_of(atrb), size, type, normalize, offset);
+    glVertexArrayAttribBinding(VAO, loc_of(atrb), 0);
+}
+
+namespace VertexType
+{
+// requires the type to have setVertexAttribute function
+template <typename V>
+concept GLVertex = requires(GLuint VAO) { V::setVertexAttribute(VAO); };
+
+template <typename V>
+concept HasNormal = GLVertex<V> && requires(V v) {
+    { v.normal } -> std::convertible_to<glm::vec3>;
+};
+
+template <typename V>
+concept HasPos3 = GLVertex<V> && requires(V v) {
+    { v.pos } -> std::convertible_to<glm::vec3>;
+};
+
+template <typename V>
+concept HasPos2 = GLVertex<V> && requires(V v) {
+    { v.pos } -> std::convertible_to<glm::vec2>;
+};
+
+template <typename V>
+concept HasTexCoord = GLVertex<V> && requires(V v) {
+    { v.texCoord } -> std::convertible_to<glm::vec2>;
+};
+
+template <typename V>
+concept HasColour = GLVertex<V> && requires(V v) {
+    { v.color } -> std::convertible_to<glm::vec3>;
+};
+
+struct PosNormalTex
 {
     vec3 pos;
     vec3 normal;
     vec2 texCoord;
+
+    static void setVertexAttribute(GLuint VAO)
+    {
+        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION, offsetof(PosNormalTex, pos), 3);
+        vertexAttributeFormat(VAO, Vertex_Attribute::NORMAL, offsetof(PosNormalTex, normal), 3);
+        vertexAttributeFormat(VAO, Vertex_Attribute::UV, offsetof(PosNormalTex, texCoord), 2);
+    }
 };
 
-// sets the vertex attribute to:
-// 0=position
-// 2=texCoord
-// 3=normal
-inline void setSimpleVertexAttrib()
+struct Pos2d
 {
-    // pos
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void *)0);
-    glEnableVertexAttribArray(0);
-    // texCoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void *)offsetof(SimpleVertex, texCoord));
-    glEnableVertexAttribArray(2);
-    // normal
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void *)offsetof(SimpleVertex, normal));
-    glEnableVertexAttribArray(3);
-}
+    vec2 pos;
+
+    static void setVertexAttribute(GLuint VAO)
+    {
+        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION2D, offsetof(PosNormalTex, pos), 2);
+    }
+};
+
+}; // namespace VertexType

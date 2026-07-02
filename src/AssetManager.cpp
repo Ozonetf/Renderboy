@@ -1,4 +1,5 @@
 #include "AssetManager.hpp"
+#include "Geometry.hpp"
 #include "Helper.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -62,7 +63,6 @@ void AssetManager::loadMeshes()
     logToCerr("======================= Loading Meshes =======================\n");
     for (const auto &fbxFile : std::filesystem::directory_iterator(meshFolder))
     {
-        auto lswt = std::filesystem::last_write_time(fbxFile);
         std::cerr << std::format("loading {}\n", fbxFile.path().string());
         auto mesh = &m_meshes.try_emplace(fbxFile.path().filename().stem().string(), Mesh{}).first->second;
         mesh->init();
