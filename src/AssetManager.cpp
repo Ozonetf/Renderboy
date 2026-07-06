@@ -1,6 +1,5 @@
 #include "AssetManager.hpp"
 #include "Helper.hpp"
-#include "Vertex.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <filesystem>

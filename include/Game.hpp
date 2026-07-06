@@ -126,10 +126,10 @@ class Game
     ShaderProgram *m_lightShader;
     GLFWwindow    *m_window = nullptr;
     GLuint         FBO;
-    GLuint         m_quadVAO;
+    Mesh           m_screenQuad;
     Texture        frameBufferTex;
     ShaderProgram *m_postProcessShader;
-    GLuint         skyboxVAO;
+    Mesh           skybox;
     ShaderProgram *m_skyboxShader;
     Texture        m_cubemap;
     GLuint         UBOcamera;

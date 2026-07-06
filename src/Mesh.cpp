@@ -1,6 +1,7 @@
 #include "Mesh.hpp"
 #include "Helper.hpp"
 #include "Vertex.hpp"
+#include "main.h"
 #include "ufbx.h"
 
 #include <cstddef>
@@ -31,9 +32,6 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
         std::cerr << err.description.data;
         return;
     }
-    logToCerr("mesh count: {}, material count: {}, \n", scene->meshes.count, scene->materials.count);
-    if (scene->meshes[0]->generated_normals)
-        std::cerr << "Generated normal\n";
 
     auto mesh = scene->meshes[0];
     if (mesh->vertex_position.exists && mesh->vertex_normal.exists && mesh->vertex_uv.exists)
@@ -46,15 +44,25 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
                   mesh->vertex_normal.exists, mesh->vertex_color.exists);
         assert(false && "vertex type not implemented");
     }
-    logToCerr("loaded {}, vert count: {} ind count: {}\n", fileName, m_meshDesc.uniqueVertexCount,
-              m_meshDesc.indexCount);
+    logToCerr("mesh count: {}, material count: {}, ", scene->meshes.count, scene->materials.count);
+    logToCerr("vert count: {} ind count: {} normal generated: {}\n", m_meshDesc.uniqueVertexCount,
+              m_meshDesc.indexCount, scene->meshes[0]->generated_normals);
 }
 
 void Mesh::render()
 {
-    glBindVertexArray(m_VAOhandle);
-    glDrawElements(GL_TRIANGLES, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    if (m_EBOhandle == 0)
+    {
+        glBindVertexArray(m_VAOhandle);
+        glDrawArrays(GL_TRIANGLES, 0, m_meshDesc.uniqueVertexCount);
+        glBindVertexArray(0);
+    }
+    else
+    {
+        glBindVertexArray(m_VAOhandle);
+        glDrawElements(GL_TRIANGLES, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    }
 }
 
 template <VertexType::GLVertex V>

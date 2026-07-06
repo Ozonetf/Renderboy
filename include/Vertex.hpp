@@ -71,13 +71,24 @@ struct PosNormalTex
     }
 };
 
-struct Pos2d
+struct Pos
 {
-    vec2 pos;
+    vec3 pos;
 
     static void setVertexAttribute(GLuint VAO)
     {
-        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION2D, offsetof(PosNormalTex, pos), 2);
+        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION, offsetof(Pos, pos), 3);
+    }
+};
+struct Pos2dTex
+{
+    vec2 pos;
+    vec2 texCoord;
+
+    static void setVertexAttribute(GLuint VAO)
+    {
+        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION2D, offsetof(Pos2dTex, pos), 2);
+        vertexAttributeFormat(VAO, Vertex_Attribute::UV, offsetof(Pos2dTex, texCoord), 2);
     }
 };
 

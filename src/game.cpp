@@ -2,8 +2,10 @@
 #include "GLFW/glfw3.h"
 #include "Helper.hpp"
 #include "UBO.hpp"
+#include "Vertex.hpp"
 #include "main.h"
 
+#include <Vertex.hpp>
 #include <format>
 #include <glad/glad.h>
 
@@ -100,26 +102,12 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_postProcessShader = m_assetManager.createShaderProgram("postProcess", "post_process.vert", "post_process.frag");
 
     tempFrameBufferSetUp();
-    glGenVertexArrays(1, &this->m_quadVAO);
-    GLuint tempvbo;
-    glGenBuffers(1, &tempvbo);
-    glBindVertexArray(m_quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, tempvbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 24, &viewportQuad, GL_STATIC_DRAW);
-    setVA_PT2();
-    glBindVertexArray(0);
+    m_screenQuad.init();
+    m_screenQuad.makeMesh<VertexType::Pos2dTex>(&viewportQuad, sizeof(viewportQuad));
 
     m_cubemap.createCubeMap();
-    glGenVertexArrays(1, &this->skyboxVAO);
-    GLuint skyVBO;
-    glCreateBuffers(1, &skyVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    skybox.init();
+    skybox.makeMesh<VertexType::Pos>(&skyboxVertices, sizeof(skyboxVertices));
 
     glCreateBuffers(1, &UBOcamera);
     glNamedBufferStorage(UBOcamera, sizeof(UBO::Camera), nullptr, GL_DYNAMIC_STORAGE_BIT);
@@ -133,7 +121,6 @@ void Game::processInput()
 {
     constexpr float speed = 0.05f;
     auto            camTranslate = glm::vec3(0.f);
-    // auto camRot         = glm::vec3(0.f);
 
     m_mouse.update(m_window);
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -214,10 +201,9 @@ void Game::render()
     m_skyboxShader->activate();
     m_skyboxShader->setUniform1("skybox", 0);
     m_skyboxShader->setUniformMat4("skyboxViewMat", glm::mat4(glm::mat3(m_camera.getView())));
-    glBindVertexArray(skyboxVAO);
     glActiveTexture(GL_TEXTURE0);
     m_cubemap.bindToActiveUnit(GL_TEXTURE_CUBE_MAP);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    skybox.render();
     glDepthFunc(GL_LESS);
 
     float sinvar = (sin(glfwGetTime()) + 1) / 2;
@@ -275,8 +261,7 @@ void Game::render()
     m_postProcessShader->setUniform1("screenTexture", 0);
     glActiveTexture(GL_TEXTURE0);
     frameBufferTex.bindToActiveUnit();
-    glBindVertexArray(m_quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    m_screenQuad.render();
     /* Swap front and back buffers */
     glfwSwapBuffers(m_window);
 }
