@@ -28,6 +28,8 @@ class AssetManager
     void                     updateShaders();
 
     ShaderProgram *createShaderProgram(std::string name, std::string vertexShaderName, std::string fragShaderName);
+    ShaderProgram *createShaderProgram(std::string name, std::string vertexShaderName, std::string geometryShaderName,
+                                       std::string fragShaderName);
 
   private:
     GLuint                                                 m_missingTexHandle;
@@ -48,6 +50,10 @@ inline ShaderType AssetManager::getShaderType(std::filesystem::path shaderPath)
     else if (ext == ".frag")
     {
         return ShaderType::fragment;
+    }
+    else if (ext == ".geom")
+    {
+        return ShaderType::geometry;
     }
     else
         return ShaderType::none;

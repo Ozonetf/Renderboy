@@ -91,6 +91,7 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
     m_phongShader = m_assetManager.createShaderProgram("phongShader", "BasicVertex.vert", "env_mapping.frag");
     m_lightShader = m_assetManager.createShaderProgram("lightShader", "BasicVertex.vert", "LightSource.frag");
     m_skyboxShader = m_assetManager.createShaderProgram("skybox", "skybox.vert", "skybox.frag");
+    m_Geom = m_assetManager.createShaderProgram("geom", "Geom.vert", "Geom.geom", "Geom.frag");
 
     m_assetManager.getTexture("backpack_albedo").bindToActiveUnit();
     glActiveTexture(GL_TEXTURE1);
@@ -103,11 +104,14 @@ int Game::init(GLFWwindow *_window, const int width, const int height)
 
     tempFrameBufferSetUp();
     m_screenQuad.init();
-    m_screenQuad.makeMesh<VertexType::Pos2dTex>(&viewportQuad, sizeof(viewportQuad));
+    m_screenQuad.makeMesh<VertexType::Pos2dTex>(&PrimativeMesh::viewportQuad, sizeof(PrimativeMesh::viewportQuad));
 
     m_cubemap.createCubeMap();
     skybox.init();
-    skybox.makeMesh<VertexType::Pos>(&skyboxVertices, sizeof(skyboxVertices));
+    skybox.makeMesh<VertexType::Pos>(&PrimativeMesh::skyboxVertices, sizeof(PrimativeMesh::skyboxVertices));
+
+    m_GeomMesh.init();
+    m_GeomMesh.makeMesh<VertexType::Position2D>(&PrimativeMesh::points, sizeof(PrimativeMesh::points));
 
     glCreateBuffers(1, &UBOcamera);
     glNamedBufferStorage(UBOcamera, sizeof(UBO::Camera), nullptr, GL_DYNAMIC_STORAGE_BIT);
@@ -252,6 +256,9 @@ void Game::render()
         m_phongShader->setUniformMat3("normalTransform", ob.getNormalTransform());
         ob.render();
     }
+
+    m_Geom->activate();
+    m_GeomMesh.render(GL_POINTS);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);

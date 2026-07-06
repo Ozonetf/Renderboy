@@ -122,15 +122,21 @@ class Game
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     static void keyPressCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
+    GLFWwindow *m_window = nullptr;
+
+    Texture frameBufferTex;
+    Texture m_cubemap;
+
+    ShaderProgram *m_postProcessShader;
+    ShaderProgram *m_Geom;
+    ShaderProgram *m_skyboxShader;
     ShaderProgram *m_phongShader;
     ShaderProgram *m_lightShader;
-    GLFWwindow    *m_window = nullptr;
-    GLuint         FBO;
-    Mesh           m_screenQuad;
-    Texture        frameBufferTex;
-    ShaderProgram *m_postProcessShader;
-    Mesh           skybox;
-    ShaderProgram *m_skyboxShader;
-    Texture        m_cubemap;
-    GLuint         UBOcamera;
+
+    Mesh m_screenQuad;
+    Mesh skybox;
+    Mesh m_GeomMesh;
+
+    GLuint UBOcamera;
+    GLuint FBO;
 };

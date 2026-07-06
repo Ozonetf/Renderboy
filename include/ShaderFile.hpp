@@ -8,7 +8,8 @@ enum ShaderType
 {
     none = 0,
     vertex = GL_VERTEX_SHADER,
-    fragment = GL_FRAGMENT_SHADER
+    fragment = GL_FRAGMENT_SHADER,
+    geometry = GL_GEOMETRY_SHADER
 };
 
 // Gets the string of shader type
@@ -16,12 +17,15 @@ inline std::string stStr(ShaderType T)
 {
     switch (T)
     {
+    default:
+    case none:
+        return "UNINITILIZED SHADER";
     case vertex:
         return "VERTEX";
     case fragment:
         return "FRAGMENT";
-    case none:
-        return "UNINITILIZED SHADER";
+    case geometry:
+        return "GEOMETRY";
     };
 }
 

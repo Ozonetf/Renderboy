@@ -49,18 +49,18 @@ void Mesh::loadModelFromFile(const char *fileName, const ufbx_load_opts opts)
               m_meshDesc.indexCount, scene->meshes[0]->generated_normals);
 }
 
-void Mesh::render()
+void Mesh::render(GLuint primativeType)
 {
     if (m_EBOhandle == 0)
     {
         glBindVertexArray(m_VAOhandle);
-        glDrawArrays(GL_TRIANGLES, 0, m_meshDesc.uniqueVertexCount);
+        glDrawArrays(primativeType, 0, m_meshDesc.uniqueVertexCount);
         glBindVertexArray(0);
     }
     else
     {
         glBindVertexArray(m_VAOhandle);
-        glDrawElements(GL_TRIANGLES, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
+        glDrawElements(primativeType, m_meshDesc.indexCount, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 }

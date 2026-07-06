@@ -151,3 +151,19 @@ ShaderProgram *AssetManager::createShaderProgram(std::string name, std::string v
     logToCerr("Shader program {} \tShader Handle {}\n", name, sp.m_handle);
     return &sp;
 }
+
+ShaderProgram *AssetManager::createShaderProgram(std::string name, std::string vertexShaderName,
+                                                 std::string geometryShaderName, std::string fragShaderName)
+{
+    auto [iter, b] = m_shaderPrograms.try_emplace(name);
+    auto &[n, sp] = *iter;
+    auto vertHandle = getShaderHandle(vertexShaderName, sp.m_handle);
+    auto geomHandle = getShaderHandle(geometryShaderName, sp.m_handle);
+    auto fragHandle = getShaderHandle(fragShaderName, sp.m_handle);
+    sp.attach(vertHandle);
+    sp.attach(geomHandle);
+    sp.attach(fragHandle);
+    sp.compile();
+    logToCerr("Shader program {} \tShader Handle {}\n", name, sp.m_handle);
+    return &sp;
+}

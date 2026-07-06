@@ -80,6 +80,17 @@ struct Pos
         vertexAttributeFormat(VAO, Vertex_Attribute::POSITION, offsetof(Pos, pos), 3);
     }
 };
+
+struct Position2D
+{
+    vec2 pos;
+
+    static void setVertexAttribute(GLuint VAO)
+    {
+        vertexAttributeFormat(VAO, Vertex_Attribute::POSITION2D, offsetof(Pos, pos), 2);
+    }
+};
+
 struct Pos2dTex
 {
     vec2 pos;
